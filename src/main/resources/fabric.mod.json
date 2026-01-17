@@ -1,0 +1,32 @@
+{
+    "schemaVersion": 1,
+    "id": "festeringportal",
+    "version": "${version}",
+    "name": "Festering Portal",
+    "description": "Build nether portals with Crying Obsidian to spread nether corruption into the overworld. Grass becomes netherrack, water turns to lava, and mobs transform into their nether counterparts. The corruption radius scales with the amount of crying obsidian in the frame.",
+    "authors": [
+        "fatlard1993"
+    ],
+    "contact": {
+        "homepage": "https://github.com/fatlard1993/festering-portal",
+        "sources": "https://github.com/fatlard1993/festering-portal",
+        "issues": "https://github.com/fatlard1993/festering-portal/issues"
+    },
+    "license": "MIT",
+    "icon": "assets/festeringportal/icon.png",
+    "environment": "*",
+    "entrypoints": {
+        "main": [
+            "com.festeringportal.FesteringPortal"
+        ]
+    },
+    "mixins": [
+        "festeringportal.mixins.json"
+    ],
+    "depends": {
+        "fabricloader": ">=0.16.0",
+        "minecraft": "~1.21.1",
+        "java": ">=21",
+        "fabric-api": "*"
+    }
+}
