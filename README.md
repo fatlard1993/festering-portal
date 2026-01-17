@@ -1,6 +1,6 @@
 # Festering Portal
 
-A Fabric mod for Minecraft 1.21.1 that makes nether portals built with **Crying Obsidian** spread nether corruption to the surrounding overworld.
+A Fabric mod for Minecraft 1.21.11 that makes nether portals built with **Crying Obsidian** spread nether corruption to the surrounding overworld.
 
 ## Features
 
@@ -24,7 +24,7 @@ A Fabric mod for Minecraft 1.21.1 that makes nether portals built with **Crying 
 
 ## Installation
 
-1. Install [Fabric Loader](https://fabricmc.net/use/) for Minecraft 1.21.1
+1. Install [Fabric Loader](https://fabricmc.net/use/) for Minecraft 1.21.11
 2. Install [Fabric API](https://modrinth.com/mod/fabric-api)
 3. Download the latest release and place in your `mods` folder
 

@@ -7,11 +7,13 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.mob.ZombieVillagerEntity;
 import net.minecraft.entity.mob.SlimeEntity;
 import net.minecraft.entity.passive.HorseEntity;
 import net.minecraft.entity.passive.PigEntity;
 import net.minecraft.entity.passive.VillagerEntity;
+import net.minecraft.world.World;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
@@ -570,7 +572,7 @@ public class SpreadingAlgorithm {
         BlockPos checkPos = pos.up();
         int depthBelow = 0;
 
-        while (depthBelow <= maxDepth + 10 && checkPos.getY() < world.getTopY()) {
+        while (depthBelow <= maxDepth + 10 && checkPos.getY() < world.getHeight()) {
             BlockState state = world.getBlockState(checkPos);
 
             // If we find air/non-solid, we've found the surface
@@ -623,7 +625,7 @@ public class SpreadingAlgorithm {
             pig.discard();
 
             // Spawn zombified piglin
-            var zombifiedPiglin = EntityType.ZOMBIFIED_PIGLIN.create(world);
+            var zombifiedPiglin = EntityType.ZOMBIFIED_PIGLIN.create(world, SpawnReason.MOB_SUMMONED);
             if (zombifiedPiglin != null) {
                 zombifiedPiglin.refreshPositionAndAngles(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, pig.getYaw(), pig.getPitch());
                 world.spawnEntity(zombifiedPiglin);
@@ -643,7 +645,7 @@ public class SpreadingAlgorithm {
             villager.discard();
 
             // Spawn zombie villager
-            ZombieVillagerEntity zombieVillager = EntityType.ZOMBIE_VILLAGER.create(world);
+            ZombieVillagerEntity zombieVillager = EntityType.ZOMBIE_VILLAGER.create(world, SpawnReason.MOB_SUMMONED);
             if (zombieVillager != null) {
                 zombieVillager.refreshPositionAndAngles(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, villager.getYaw(), villager.getPitch());
                 zombieVillager.setVillagerData(villagerData);
@@ -663,7 +665,7 @@ public class SpreadingAlgorithm {
             int size = slime.getSize();
             slime.discard();
 
-            var magmaCube = EntityType.MAGMA_CUBE.create(world);
+            var magmaCube = EntityType.MAGMA_CUBE.create(world, SpawnReason.MOB_SUMMONED);
             if (magmaCube != null) {
                 magmaCube.setSize(size, false);
                 magmaCube.refreshPositionAndAngles(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, slime.getYaw(), slime.getPitch());
@@ -682,7 +684,7 @@ public class SpreadingAlgorithm {
             BlockPos pos = horse.getBlockPos();
             horse.discard();
 
-            var skeletonHorse = EntityType.SKELETON_HORSE.create(world);
+            var skeletonHorse = EntityType.SKELETON_HORSE.create(world, SpawnReason.MOB_SUMMONED);
             if (skeletonHorse != null) {
                 skeletonHorse.refreshPositionAndAngles(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, horse.getYaw(), horse.getPitch());
                 world.spawnEntity(skeletonHorse);

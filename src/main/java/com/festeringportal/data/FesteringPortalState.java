@@ -1,19 +1,18 @@
 package com.festeringportal.data;
 
 import com.festeringportal.FesteringPortal;
-import net.minecraft.datafixer.DataFixTypes;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.registry.RegistryWrapper;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.PersistentState;
 import net.minecraft.world.PersistentStateManager;
+import net.minecraft.world.PersistentStateType;
 import net.minecraft.world.World;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Persistent state storage for festering portals.
@@ -24,10 +23,16 @@ public class FesteringPortalState extends PersistentState {
     private static final String STATE_ID = FesteringPortal.MOD_ID + "_portals";
 
     // Map of portal center position -> portal data
-    private final Map<BlockPos, FesteringPortalData> festeringPortals = new HashMap<>();
+    private Map<BlockPos, FesteringPortalData> festeringPortals;
 
     public FesteringPortalState() {
         super();
+        this.festeringPortals = new HashMap<>();
+    }
+
+    public FesteringPortalState(Map<BlockPos, FesteringPortalData> portals) {
+        super();
+        this.festeringPortals = new HashMap<>(portals);
     }
 
     /**
@@ -37,8 +42,18 @@ public class FesteringPortalState extends PersistentState {
         public final BlockPos center;
         public final int cryingObsidianCount;
         public final int maxRadius;
-        public final Set<BlockPos> corruptionFrontier;
+        public Set<BlockPos> corruptionFrontier;
         public long lastSpreadTick;
+
+        // Codec for FesteringPortalData
+        public static final Codec<FesteringPortalData> CODEC = RecordCodecBuilder.create(instance ->
+            instance.group(
+                BlockPos.CODEC.fieldOf("center").forGetter(d -> d.center),
+                Codec.INT.fieldOf("cryingCount").forGetter(d -> d.cryingObsidianCount),
+                Codec.LONG.fieldOf("lastTick").forGetter(d -> d.lastSpreadTick),
+                BlockPos.CODEC.listOf().fieldOf("frontier").forGetter(d -> new ArrayList<>(d.corruptionFrontier))
+            ).apply(instance, FesteringPortalData::fromCodec)
+        );
 
         public FesteringPortalData(BlockPos center, int cryingObsidianCount) {
             this.center = center;
@@ -59,6 +74,11 @@ public class FesteringPortalState extends PersistentState {
             this.lastSpreadTick = lastTick;
         }
 
+        // Factory method for Codec
+        private static FesteringPortalData fromCodec(BlockPos center, int cryingCount, long lastTick, List<BlockPos> frontier) {
+            return new FesteringPortalData(center, cryingCount, new HashSet<>(frontier), lastTick);
+        }
+
         /**
          * Check if a position is within the max spread radius.
          */
@@ -66,58 +86,35 @@ public class FesteringPortalState extends PersistentState {
             double distance = Math.sqrt(center.getSquaredDistance(pos));
             return distance <= maxRadius;
         }
-
-        /**
-         * Serialize to NBT.
-         */
-        public NbtCompound toNbt() {
-            NbtCompound nbt = new NbtCompound();
-            nbt.putInt("centerX", center.getX());
-            nbt.putInt("centerY", center.getY());
-            nbt.putInt("centerZ", center.getZ());
-            nbt.putInt("cryingCount", cryingObsidianCount);
-            nbt.putLong("lastTick", lastSpreadTick);
-
-            // Save frontier positions
-            NbtList frontierList = new NbtList();
-            for (BlockPos pos : corruptionFrontier) {
-                NbtCompound posNbt = new NbtCompound();
-                posNbt.putInt("x", pos.getX());
-                posNbt.putInt("y", pos.getY());
-                posNbt.putInt("z", pos.getZ());
-                frontierList.add(posNbt);
-            }
-            nbt.put("frontier", frontierList);
-
-            return nbt;
-        }
-
-        /**
-         * Deserialize from NBT.
-         */
-        public static FesteringPortalData fromNbt(NbtCompound nbt) {
-            BlockPos center = new BlockPos(
-                    nbt.getInt("centerX"),
-                    nbt.getInt("centerY"),
-                    nbt.getInt("centerZ")
-            );
-            int cryingCount = nbt.getInt("cryingCount");
-            long lastTick = nbt.getLong("lastTick");
-
-            Set<BlockPos> frontier = new HashSet<>();
-            NbtList frontierList = nbt.getList("frontier", NbtElement.COMPOUND_TYPE);
-            for (int i = 0; i < frontierList.size(); i++) {
-                NbtCompound posNbt = frontierList.getCompound(i);
-                frontier.add(new BlockPos(
-                        posNbt.getInt("x"),
-                        posNbt.getInt("y"),
-                        posNbt.getInt("z")
-                ));
-            }
-
-            return new FesteringPortalData(center, cryingCount, frontier, lastTick);
-        }
     }
+
+    // Codec for the entire state
+    public static final Codec<FesteringPortalState> CODEC = RecordCodecBuilder.create(instance ->
+        instance.group(
+            Codec.unboundedMap(
+                Codec.STRING.xmap(
+                    str -> {
+                        String[] parts = str.split(",");
+                        return new BlockPos(
+                            Integer.parseInt(parts[0]),
+                            Integer.parseInt(parts[1]),
+                            Integer.parseInt(parts[2])
+                        );
+                    },
+                    pos -> pos.getX() + "," + pos.getY() + "," + pos.getZ()
+                ),
+                FesteringPortalData.CODEC
+            ).fieldOf("portals").forGetter(state -> state.festeringPortals)
+        ).apply(instance, FesteringPortalState::new)
+    );
+
+    // PersistentStateType for 1.21.11+
+    private static final PersistentStateType<FesteringPortalState> TYPE = new PersistentStateType<>(
+        STATE_ID,
+        FesteringPortalState::new,
+        CODEC,
+        null // No DataFixTypes needed for mod data
+    );
 
     /**
      * Register a new festering portal.
@@ -170,32 +167,6 @@ public class FesteringPortalState extends PersistentState {
         }
     }
 
-    @Override
-    public NbtCompound writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
-        NbtList portalsList = new NbtList();
-        for (FesteringPortalData portal : festeringPortals.values()) {
-            portalsList.add(portal.toNbt());
-        }
-        nbt.put("portals", portalsList);
-        return nbt;
-    }
-
-    /**
-     * Create state from NBT.
-     */
-    public static FesteringPortalState createFromNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
-        FesteringPortalState state = new FesteringPortalState();
-        NbtList portalsList = nbt.getList("portals", NbtElement.COMPOUND_TYPE);
-        for (int i = 0; i < portalsList.size(); i++) {
-            FesteringPortalData data = FesteringPortalData.fromNbt(portalsList.getCompound(i));
-            state.festeringPortals.put(data.center, data);
-        }
-        if (!state.festeringPortals.isEmpty()) {
-            FesteringPortal.LOGGER.info("Loaded {} festering portal(s)", state.festeringPortals.size());
-        }
-        return state;
-    }
-
     /**
      * Get or create the state for the server's overworld.
      */
@@ -205,15 +176,11 @@ public class FesteringPortalState extends PersistentState {
             throw new IllegalStateException("Overworld not found!");
         }
         PersistentStateManager manager = world.getPersistentStateManager();
+        FesteringPortalState state = manager.getOrCreate(TYPE);
 
-        FesteringPortalState state = manager.getOrCreate(
-                new Type<>(
-                        FesteringPortalState::new,
-                        FesteringPortalState::createFromNbt,
-                        DataFixTypes.LEVEL
-                ),
-                STATE_ID
-        );
+        if (!state.festeringPortals.isEmpty()) {
+            FesteringPortal.LOGGER.debug("Loaded {} festering portal(s)", state.festeringPortals.size());
+        }
 
         return state;
     }

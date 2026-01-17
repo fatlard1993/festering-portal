@@ -9,6 +9,7 @@ import net.minecraft.block.Blocks;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldAccess;
 import net.minecraft.world.dimension.NetherPortal;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -52,7 +53,7 @@ public class AbstractFireBlockMixin {
         method = "onBlockAdded",
         at = @At(
             value = "INVOKE",
-            target = "Lnet/minecraft/world/dimension/NetherPortal;createPortal()V",
+            target = "Lnet/minecraft/world/dimension/NetherPortal;createPortal(Lnet/minecraft/world/WorldAccess;)V",
             shift = At.Shift.AFTER
         ),
         locals = LocalCapture.CAPTURE_FAILSOFT

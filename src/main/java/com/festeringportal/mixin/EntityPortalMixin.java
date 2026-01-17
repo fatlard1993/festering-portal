@@ -23,7 +23,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class EntityPortalMixin {
 
     @Shadow
-    public abstract World getWorld();
+    public abstract World getEntityWorld();
 
     /**
      * Inject after an entity teleports through a portal.
@@ -37,7 +37,7 @@ public abstract class EntityPortalMixin {
         Entity result = cir.getReturnValue();
         if (result == null) return;
 
-        World world = result.getWorld();
+        World world = result.getEntityWorld();
 
         // Only trigger in the Overworld (entities coming FROM the nether)
         if (!(world instanceof ServerWorld serverWorld)) return;
