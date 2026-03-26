@@ -66,12 +66,11 @@ public class PortalScanner {
     private static Set<BlockPos> findFrameBlocksForAxis(ServerWorld world, BlockPos startPos, Direction.Axis axis) {
         Set<BlockPos> frameBlocks = new HashSet<>();
 
-        // Determine the horizontal directions based on axis
+        // Determine the horizontal direction based on axis
         Direction widthDir = axis == Direction.Axis.X ? Direction.EAST : Direction.SOUTH;
-        Direction depthDir = axis == Direction.Axis.X ? Direction.SOUTH : Direction.EAST;
 
         // Search for the portal interior by finding adjacent portal blocks
-        BlockPos portalInterior = findPortalInterior(world, startPos, widthDir);
+        BlockPos portalInterior = findPortalInterior(world, startPos);
         if (portalInterior == null) {
             return frameBlocks;
         }
@@ -117,7 +116,7 @@ public class PortalScanner {
     /**
      * Find a portal block near the start position.
      */
-    private static BlockPos findPortalInterior(ServerWorld world, BlockPos startPos, Direction widthDir) {
+    private static BlockPos findPortalInterior(ServerWorld world, BlockPos startPos) {
         // Check if start pos is already a portal block
         if (world.getBlockState(startPos).isOf(Blocks.NETHER_PORTAL)) {
             return startPos;
@@ -189,35 +188,45 @@ public class PortalScanner {
 
     /**
      * Calculate the center position of a portal.
+     * Measures both axes and picks the wider one to correctly detect portal orientation.
      */
     public static BlockPos calculatePortalCenter(ServerWorld world, BlockPos portalPos) {
-        BlockPos interior = findPortalInterior(world, portalPos, Direction.EAST);
+        BlockPos interior = findPortalInterior(world, portalPos);
         if (interior == null) {
             return portalPos;
         }
 
-        // Find lower corner and dimensions
-        BlockPos lowerCorner = findLowerCorner(world, interior, Direction.EAST);
-        if (lowerCorner == null) {
-            lowerCorner = findLowerCorner(world, interior, Direction.SOUTH);
+        // Measure both axes, pick the wider one
+        BlockPos eastCorner = findLowerCorner(world, interior, Direction.EAST);
+        int eastWidth = eastCorner != null ? measureWidth(world, eastCorner, Direction.EAST) : 0;
+
+        BlockPos southCorner = findLowerCorner(world, interior, Direction.SOUTH);
+        int southWidth = southCorner != null ? measureWidth(world, southCorner, Direction.SOUTH) : 0;
+
+        Direction widthDir;
+        BlockPos lowerCorner;
+        int width;
+
+        if (southWidth > eastWidth) {
+            widthDir = Direction.SOUTH;
+            lowerCorner = southCorner;
+            width = southWidth;
+        } else {
+            widthDir = Direction.EAST;
+            lowerCorner = eastCorner;
+            width = eastWidth;
         }
-        if (lowerCorner == null) {
+
+        if (lowerCorner == null || width == 0) {
             return portalPos;
         }
 
-        int width = measureWidth(world, lowerCorner, Direction.EAST);
-        if (width == 0) {
-            width = measureWidth(world, lowerCorner, Direction.SOUTH);
-        }
         int height = measureHeight(world, lowerCorner);
 
+        // Apply width offset along the correct axis
+        if (widthDir == Direction.SOUTH) {
+            return lowerCorner.add(0, height / 2, width / 2);
+        }
         return lowerCorner.add(width / 2, height / 2, 0);
-    }
-
-    /**
-     * Check if a block is a valid portal frame block (obsidian or crying obsidian).
-     */
-    public static boolean isFrameBlock(BlockState state) {
-        return state.isOf(Blocks.OBSIDIAN) || state.isOf(Blocks.CRYING_OBSIDIAN);
     }
 }

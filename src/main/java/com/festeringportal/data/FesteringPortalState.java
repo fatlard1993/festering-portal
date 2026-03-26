@@ -1,7 +1,9 @@
 package com.festeringportal.data;
 
 import com.festeringportal.FesteringPortal;
+import com.festeringportal.config.FesteringConfig;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerWorld;
@@ -12,7 +14,6 @@ import net.minecraft.world.PersistentStateType;
 import net.minecraft.world.World;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Persistent state storage for festering portals.
@@ -21,8 +22,8 @@ import java.util.stream.Collectors;
 public class FesteringPortalState extends PersistentState {
 
     private static final String STATE_ID = FesteringPortal.MOD_ID + "_portals";
+    public static final int MAX_FRONTIER_SIZE = 5000;
 
-    // Map of portal center position -> portal data
     private Map<BlockPos, FesteringPortalData> festeringPortals;
 
     public FesteringPortalState() {
@@ -44,13 +45,14 @@ public class FesteringPortalState extends PersistentState {
         public final int maxRadius;
         public Set<BlockPos> corruptionFrontier;
         public long lastSpreadTick;
+        public long lastBurstTick;
 
-        // Codec for FesteringPortalData
         public static final Codec<FesteringPortalData> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
                 BlockPos.CODEC.fieldOf("center").forGetter(d -> d.center),
                 Codec.INT.fieldOf("cryingCount").forGetter(d -> d.cryingObsidianCount),
                 Codec.LONG.fieldOf("lastTick").forGetter(d -> d.lastSpreadTick),
+                Codec.LONG.optionalFieldOf("lastBurstTick", 0L).forGetter(d -> d.lastBurstTick),
                 BlockPos.CODEC.listOf().fieldOf("frontier").forGetter(d -> new ArrayList<>(d.corruptionFrontier))
             ).apply(instance, FesteringPortalData::fromCodec)
         );
@@ -58,62 +60,67 @@ public class FesteringPortalState extends PersistentState {
         public FesteringPortalData(BlockPos center, int cryingObsidianCount) {
             this.center = center;
             this.cryingObsidianCount = cryingObsidianCount;
-            this.maxRadius = cryingObsidianCount * 64; // 64 blocks per crying obsidian
+            this.maxRadius = cryingObsidianCount * FesteringConfig.RADIUS_PER_CRYING_OBSIDIAN;
             this.corruptionFrontier = new HashSet<>();
             this.lastSpreadTick = 0;
-
-            // Initialize frontier with the portal center
+            this.lastBurstTick = 0;
             this.corruptionFrontier.add(center);
         }
 
-        private FesteringPortalData(BlockPos center, int cryingObsidianCount, Set<BlockPos> frontier, long lastTick) {
+        private FesteringPortalData(BlockPos center, int cryingObsidianCount, Set<BlockPos> frontier, long lastTick, long lastBurstTick) {
             this.center = center;
             this.cryingObsidianCount = cryingObsidianCount;
-            this.maxRadius = cryingObsidianCount * 64;
+            this.maxRadius = cryingObsidianCount * FesteringConfig.RADIUS_PER_CRYING_OBSIDIAN;
             this.corruptionFrontier = frontier;
             this.lastSpreadTick = lastTick;
+            this.lastBurstTick = lastBurstTick;
         }
 
-        // Factory method for Codec
-        private static FesteringPortalData fromCodec(BlockPos center, int cryingCount, long lastTick, List<BlockPos> frontier) {
-            return new FesteringPortalData(center, cryingCount, new HashSet<>(frontier), lastTick);
+        private static FesteringPortalData fromCodec(BlockPos center, int cryingCount, long lastTick, long lastBurstTick, List<BlockPos> frontier) {
+            return new FesteringPortalData(center, cryingCount, new HashSet<>(frontier), lastTick, lastBurstTick);
         }
 
         /**
          * Check if a position is within the max spread radius.
          */
         public boolean isWithinMaxRadius(BlockPos pos) {
-            double distance = Math.sqrt(center.getSquaredDistance(pos));
-            return distance <= maxRadius;
+            double distSq = center.getSquaredDistance(pos);
+            return distSq <= (double) maxRadius * maxRadius;
         }
     }
 
-    // Codec for the entire state
+    // BlockPos string codec with error handling
+    private static final Codec<BlockPos> BLOCK_POS_STRING_CODEC = Codec.STRING.comapFlatMap(
+        str -> {
+            try {
+                String[] parts = str.split(",");
+                if (parts.length != 3) {
+                    return DataResult.error(() -> "Invalid BlockPos format (expected 3 parts): " + str);
+                }
+                return DataResult.success(new BlockPos(
+                    Integer.parseInt(parts[0].trim()),
+                    Integer.parseInt(parts[1].trim()),
+                    Integer.parseInt(parts[2].trim())
+                ));
+            } catch (NumberFormatException e) {
+                return DataResult.error(() -> "Invalid BlockPos number format: " + str);
+            }
+        },
+        pos -> pos.getX() + "," + pos.getY() + "," + pos.getZ()
+    );
+
     public static final Codec<FesteringPortalState> CODEC = RecordCodecBuilder.create(instance ->
         instance.group(
-            Codec.unboundedMap(
-                Codec.STRING.xmap(
-                    str -> {
-                        String[] parts = str.split(",");
-                        return new BlockPos(
-                            Integer.parseInt(parts[0]),
-                            Integer.parseInt(parts[1]),
-                            Integer.parseInt(parts[2])
-                        );
-                    },
-                    pos -> pos.getX() + "," + pos.getY() + "," + pos.getZ()
-                ),
-                FesteringPortalData.CODEC
-            ).fieldOf("portals").forGetter(state -> state.festeringPortals)
+            Codec.unboundedMap(BLOCK_POS_STRING_CODEC, FesteringPortalData.CODEC)
+                .fieldOf("portals").forGetter(state -> state.festeringPortals)
         ).apply(instance, FesteringPortalState::new)
     );
 
-    // PersistentStateType for 1.21.11+
     private static final PersistentStateType<FesteringPortalState> TYPE = new PersistentStateType<>(
         STATE_ID,
         FesteringPortalState::new,
         CODEC,
-        null // No DataFixTypes needed for mod data
+        null
     );
 
     /**
@@ -155,13 +162,24 @@ public class FesteringPortalState extends PersistentState {
     }
 
     /**
-     * Update the frontier for a portal.
+     * Update the frontier for a portal. Enforces MAX_FRONTIER_SIZE cap.
      */
     public void updateFrontier(BlockPos center, Set<BlockPos> newFrontier, long tick) {
         FesteringPortalData data = festeringPortals.get(center);
         if (data != null) {
-            data.corruptionFrontier.clear();
-            data.corruptionFrontier.addAll(newFrontier);
+            if (data.corruptionFrontier != newFrontier) {
+                data.corruptionFrontier.clear();
+                data.corruptionFrontier.addAll(newFrontier);
+            }
+            // Enforce frontier size cap by evicting random entries
+            if (data.corruptionFrontier.size() > MAX_FRONTIER_SIZE) {
+                Iterator<BlockPos> it = data.corruptionFrontier.iterator();
+                int toRemove = data.corruptionFrontier.size() - MAX_FRONTIER_SIZE;
+                for (int i = 0; i < toRemove && it.hasNext(); i++) {
+                    it.next();
+                    it.remove();
+                }
+            }
             data.lastSpreadTick = tick;
             markDirty();
         }
@@ -176,19 +194,16 @@ public class FesteringPortalState extends PersistentState {
             throw new IllegalStateException("Overworld not found!");
         }
         PersistentStateManager manager = world.getPersistentStateManager();
-        FesteringPortalState state = manager.getOrCreate(TYPE);
-
-        if (!state.festeringPortals.isEmpty()) {
-            FesteringPortal.LOGGER.debug("Loaded {} festering portal(s)", state.festeringPortals.size());
-        }
-
-        return state;
+        return manager.getOrCreate(TYPE);
     }
 
     /**
      * Initialize the state system.
      */
     public static void initialize(MinecraftServer server) {
-        getServerState(server);
+        FesteringPortalState state = getServerState(server);
+        if (!state.festeringPortals.isEmpty()) {
+            FesteringPortal.LOGGER.info("Loaded {} festering portal(s)", state.festeringPortals.size());
+        }
     }
 }

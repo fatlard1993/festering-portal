@@ -13,9 +13,10 @@ import net.minecraft.entity.mob.SlimeEntity;
 import net.minecraft.entity.passive.HorseEntity;
 import net.minecraft.entity.passive.PigEntity;
 import net.minecraft.entity.passive.VillagerEntity;
-import net.minecraft.world.World;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.block.enums.DoubleBlockHalf;
+import net.minecraft.state.property.Properties;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Direction;
@@ -23,8 +24,6 @@ import net.minecraft.util.math.random.Random;
 import net.minecraft.village.VillagerData;
 
 import java.util.*;
-import java.util.LinkedList;
-import java.util.Queue;
 
 /**
  * Grass-like organic spreading algorithm for nether corruption.
@@ -73,19 +72,22 @@ public class SpreadingAlgorithm {
         boolean anySpread = false;
         Random random = world.getRandom();
 
+        // Snapshot frontier once for random access
+        List<BlockPos> frontierList = new ArrayList<>(frontier);
+
         // Try multiple spread attempts per tick
         for (int attempt = 0; attempt < SPREADS_PER_TICK; attempt++) {
-            if (frontier.isEmpty()) break;
+            if (frontierList.isEmpty()) break;
 
             // Pick a random block from the frontier
-            List<BlockPos> frontierList = new ArrayList<>(frontier);
             BlockPos spreadSource = frontierList.get(random.nextInt(frontierList.size()));
 
-            // Try to spread to a random adjacent block
-            List<Direction> shuffledDirections = new ArrayList<>(Arrays.asList(DIRECTIONS));
-            Collections.shuffle(shuffledDirections, new java.util.Random(random.nextLong()));
+            // Try to spread to a random adjacent block — start from a random offset
+            // instead of allocating+shuffling a list each iteration
+            int startDir = random.nextInt(DIRECTIONS.length);
 
-            for (Direction direction : shuffledDirections) {
+            for (int d = 0; d < DIRECTIONS.length; d++) {
+                Direction direction = DIRECTIONS[(startDir + d) % DIRECTIONS.length];
                 BlockPos targetPos = spreadSource.offset(direction);
 
                 // Check if within max radius
@@ -121,11 +123,16 @@ public class SpreadingAlgorithm {
                     continue;
                 }
 
+                // Skip upper halves of double-tall blocks — bottom drives both
+                if (targetState.contains(Properties.DOUBLE_BLOCK_HALF)
+                        && targetState.get(Properties.DOUBLE_BLOCK_HALF) == DoubleBlockHalf.UPPER) {
+                    continue;
+                }
+
                 // Get transformation
-                BlockState transformedState = BlockTransformations.getTransformation(targetState);
+                BlockState transformedState = BlockTransformations.getTransformation(targetState, world.getRandom());
                 if (transformedState != null && !targetState.equals(transformedState)) {
-                    // Perform the transformation
-                    world.setBlockState(targetPos, transformedState, Block.NOTIFY_ALL);
+                    transformBlock(world, targetPos, targetState, transformedState);
 
                     // Add the newly corrupted block to the frontier
                     frontier.add(targetPos);
@@ -179,27 +186,50 @@ public class SpreadingAlgorithm {
         int spread = 0;
         int attempts = 0;
         int maxAttempts = burstSize * 10;
+        Random random = world.getRandom();
+        List<BlockPos> frontierList = new ArrayList<>(frontier);
+        Set<BlockPos> toRemove = new HashSet<>();
 
-        while (spread < burstSize && attempts < maxAttempts && !frontier.isEmpty()) {
+        while (spread < burstSize && attempts < maxAttempts && !frontierList.isEmpty()) {
             attempts++;
 
-            List<BlockPos> frontierList = new ArrayList<>(frontier);
-            Random random = world.getRandom();
-            BlockPos spreadSource = frontierList.get(random.nextInt(frontierList.size()));
+            // Pick random source; swap-remove if flagged dead to avoid O(n) scans
+            int idx = random.nextInt(frontierList.size());
+            BlockPos spreadSource = frontierList.get(idx);
 
             for (Direction direction : DIRECTIONS) {
                 BlockPos targetPos = spreadSource.offset(direction);
 
                 if (!portal.isWithinMaxRadius(targetPos)) continue;
                 if (!world.isChunkLoaded(targetPos)) continue;
+                if (!isWithinDepthLimit(world, targetPos)) continue;
 
                 BlockState targetState = world.getBlockState(targetPos);
                 if (BlockTransformations.isImmune(targetState)) continue;
 
-                BlockState transformedState = BlockTransformations.getTransformation(targetState);
+                // Water-to-lava handling (same as spreadFromPortal)
+                if (targetState.isOf(Blocks.WATER)) {
+                    if (transformWaterToLava(world, targetPos)) {
+                        frontier.add(targetPos);
+                        frontierList.add(targetPos);
+                        spawnCorruptionParticles(world, targetPos);
+                        spread++;
+                        break;
+                    }
+                    continue;
+                }
+
+                // Skip upper halves of double-tall blocks — bottom drives both
+                if (targetState.contains(Properties.DOUBLE_BLOCK_HALF)
+                        && targetState.get(Properties.DOUBLE_BLOCK_HALF) == DoubleBlockHalf.UPPER) {
+                    continue;
+                }
+
+                BlockState transformedState = BlockTransformations.getTransformation(targetState, random);
                 if (transformedState != null && !targetState.equals(transformedState)) {
-                    world.setBlockState(targetPos, transformedState, Block.NOTIFY_ALL);
+                    transformBlock(world, targetPos, targetState, transformedState);
                     frontier.add(targetPos);
+                    frontierList.add(targetPos);
                     spawnCorruptionParticles(world, targetPos);
                     spread++;
                     break;
@@ -207,12 +237,55 @@ public class SpreadingAlgorithm {
             }
 
             if (shouldRemoveFromFrontier(world, portal, spreadSource)) {
-                frontier.remove(spreadSource);
+                toRemove.add(spreadSource);
+                // Swap-remove from list: O(1) instead of O(n)
+                int last = frontierList.size() - 1;
+                frontierList.set(idx, frontierList.get(last));
+                frontierList.remove(last);
             }
         }
 
+        // Bulk-remove dead frontier entries
+        frontier.removeAll(toRemove);
+
         state.updateFrontier(portal.center, frontier, world.getTime());
         FesteringPortal.LOGGER.debug("Burst spread {} blocks", spread);
+    }
+
+    /**
+     * Transform a block, handling double-tall blocks (doors, tall plants) properly.
+     * Bottom halves drive the transform for both halves; upper halves are skipped at the call site.
+     */
+    private static void transformBlock(ServerWorld world, BlockPos targetPos, BlockState targetState, BlockState transformedState) {
+        if (targetState.contains(Properties.DOUBLE_BLOCK_HALF)) {
+            DoubleBlockHalf half = targetState.get(Properties.DOUBLE_BLOCK_HALF);
+            if (half == DoubleBlockHalf.UPPER) {
+                return;
+            }
+
+            // Bottom half: transform it, then handle the top
+            world.setBlockState(targetPos, transformedState, Block.NOTIFY_ALL);
+
+            BlockPos topPos = targetPos.up();
+            BlockState topState = world.getBlockState(topPos);
+
+            if (topState.contains(Properties.DOUBLE_BLOCK_HALF)
+                    && topState.get(Properties.DOUBLE_BLOCK_HALF) == DoubleBlockHalf.UPPER) {
+                if (transformedState.contains(Properties.DOUBLE_BLOCK_HALF)) {
+                    // Door→door: set top half of new door
+                    world.setBlockState(topPos,
+                            transformedState.with(Properties.DOUBLE_BLOCK_HALF, DoubleBlockHalf.UPPER),
+                            Block.NOTIFY_ALL);
+                } else {
+                    // Tall plant→single block: clear the orphaned top
+                    world.setBlockState(topPos, Blocks.AIR.getDefaultState(), Block.NOTIFY_ALL);
+                }
+            }
+            return;
+        }
+
+        // Normal single block
+        world.setBlockState(targetPos, transformedState, Block.NOTIFY_ALL);
     }
 
     /**
@@ -242,7 +315,7 @@ public class SpreadingAlgorithm {
             BlockState currentState = world.getBlockState(pos);
 
             // Only mature nether blocks (already corrupted)
-            if (!isNetherCorruptedBlock(currentState)) continue;
+            if (!BlockTransformations.isNetherBlock(currentState.getBlock())) continue;
 
             // Analyze neighbors and attempt maturation
             BlockTransformations.NeighborContext context =
@@ -289,17 +362,24 @@ public class SpreadingAlgorithm {
         );
     }
 
+    /** Max frontier entries to check per cleanup pass. */
+    private static final int CLEANUP_BATCH_SIZE = 50;
+
     /**
      * Clean up the frontier by removing blocks that are no longer valid spread sources.
+     * Amortized: processes up to CLEANUP_BATCH_SIZE entries per call to avoid
+     * scanning the entire frontier every tick.
      */
     private static void cleanupFrontier(
             ServerWorld world,
             FesteringPortalState.FesteringPortalData portal,
             Set<BlockPos> frontier) {
 
+        int checked = 0;
         Iterator<BlockPos> iterator = frontier.iterator();
-        while (iterator.hasNext()) {
+        while (iterator.hasNext() && checked < CLEANUP_BATCH_SIZE) {
             BlockPos pos = iterator.next();
+            checked++;
 
             // Remove if outside max radius
             if (!portal.isWithinMaxRadius(pos)) {
@@ -358,6 +438,8 @@ public class SpreadingAlgorithm {
      * Only works on surface water (water with air above).
      */
     private static boolean transformWaterToLava(ServerWorld world, BlockPos waterPos) {
+        if (!FesteringConfig.TRANSFORM_WATER_TO_LAVA) return false;
+
         Random random = world.getRandom();
 
         // Only transform SURFACE water - must have air or non-water above
@@ -404,9 +486,9 @@ public class SpreadingAlgorithm {
     private static Block getRandomWallBlock(Random random) {
         float roll = random.nextFloat();
         if (roll < 0.4f) {
-            return Blocks.STONE;
+            return Blocks.BLACKSTONE;
         } else if (roll < 0.7f) {
-            return Blocks.COBBLESTONE;
+            return Blocks.BASALT;
         } else {
             return Blocks.OBSIDIAN;
         }
@@ -459,15 +541,15 @@ public class SpreadingAlgorithm {
             blocksExplored++;
 
             // Stop if outside the portal's max radius
-            double dist = Math.sqrt(current.getSquaredDistance(portalCenter));
-            if (dist > maxRadius) continue;
+            double distSq = current.getSquaredDistance(portalCenter);
+            if (distSq > (double) maxRadius * maxRadius) continue;
 
             if (!world.isChunkLoaded(current)) continue;
 
             BlockState state = world.getBlockState(current);
 
             // If this is a corrupted block or portal block
-            if (isNetherCorruptedBlock(state) || state.isOf(Blocks.NETHER_PORTAL) || state.isOf(Blocks.CRYING_OBSIDIAN) || state.isOf(Blocks.OBSIDIAN)) {
+            if (BlockTransformations.isNetherBlock(state.getBlock()) || state.isOf(Blocks.NETHER_PORTAL) || state.isOf(Blocks.CRYING_OBSIDIAN) || state.isOf(Blocks.OBSIDIAN)) {
                 // Check if it's an edge block (has transformable neighbors WITHIN max radius)
                 if (hasTransformableNeighborWithinRadius(world, current, portalCenter, maxRadius)) {
                     frontier.add(current);
@@ -502,8 +584,8 @@ public class SpreadingAlgorithm {
             BlockPos neighbor = pos.offset(dir);
 
             // Skip if neighbor is outside max radius
-            double dist = Math.sqrt(neighbor.getSquaredDistance(portalCenter));
-            if (dist > maxRadius) continue;
+            double distSq = neighbor.getSquaredDistance(portalCenter);
+            if (distSq > (double) maxRadius * maxRadius) continue;
 
             if (!world.isChunkLoaded(neighbor)) continue;
             BlockState state = world.getBlockState(neighbor);
@@ -514,52 +596,6 @@ public class SpreadingAlgorithm {
         return false;
     }
 
-    /**
-     * Check if a position has any transformable (uncorrupted) neighbors.
-     */
-    private static boolean hasTransformableNeighbor(ServerWorld world, BlockPos pos) {
-        for (Direction dir : DIRECTIONS) {
-            BlockPos neighbor = pos.offset(dir);
-            if (!world.isChunkLoaded(neighbor)) continue;
-            BlockState state = world.getBlockState(neighbor);
-            if (!BlockTransformations.isImmune(state) && BlockTransformations.canTransform(state)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Check if a position has any corrupted (nether) neighbors.
-     */
-    private static boolean hasCorruptedNeighbor(ServerWorld world, BlockPos pos) {
-        for (Direction dir : DIRECTIONS) {
-            BlockPos neighbor = pos.offset(dir);
-            if (!world.isChunkLoaded(neighbor)) continue;
-            BlockState state = world.getBlockState(neighbor);
-            if (isNetherCorruptedBlock(state) || state.isOf(Blocks.NETHER_PORTAL)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Check if a block is a nether-corrupted block that can act as a spread source.
-     */
-    private static boolean isNetherCorruptedBlock(BlockState state) {
-        Block block = state.getBlock();
-        return block == Blocks.NETHERRACK ||
-                block == Blocks.SOUL_SOIL ||
-                block == Blocks.SOUL_SAND ||
-                block == Blocks.BASALT ||
-                block == Blocks.BLACKSTONE ||
-                block == Blocks.CRIMSON_STEM ||
-                block == Blocks.WARPED_STEM ||
-                block == Blocks.NETHER_WART_BLOCK ||
-                block == Blocks.WARPED_WART_BLOCK ||
-                block == Blocks.MAGMA_BLOCK;
-    }
 
     /**
      * Check if a position is within the allowed depth from surface.
@@ -619,7 +655,7 @@ public class SpreadingAlgorithm {
             BlockPos pigPos = pig.getBlockPos();
             // Only corrupt if standing on corrupted ground
             BlockState groundState = world.getBlockState(pigPos.down());
-            return isNetherCorruptedBlock(groundState) && portal.isWithinMaxRadius(pigPos);
+            return BlockTransformations.isNetherBlock(groundState.getBlock()) && portal.isWithinMaxRadius(pigPos);
         }).stream().findFirst().ifPresent(pig -> {
             BlockPos pos = pig.getBlockPos();
             pig.discard();
@@ -638,7 +674,7 @@ public class SpreadingAlgorithm {
         world.getEntitiesByClass(VillagerEntity.class, searchBox, villager -> {
             BlockPos villagerPos = villager.getBlockPos();
             BlockState groundState = world.getBlockState(villagerPos.down());
-            return isNetherCorruptedBlock(groundState) && portal.isWithinMaxRadius(villagerPos);
+            return BlockTransformations.isNetherBlock(groundState.getBlock()) && portal.isWithinMaxRadius(villagerPos);
         }).stream().findFirst().ifPresent(villager -> {
             BlockPos pos = villager.getBlockPos();
             VillagerData villagerData = villager.getVillagerData();
@@ -659,7 +695,7 @@ public class SpreadingAlgorithm {
         world.getEntitiesByClass(SlimeEntity.class, searchBox, slime -> {
             BlockPos slimePos = slime.getBlockPos();
             BlockState groundState = world.getBlockState(slimePos.down());
-            return isNetherCorruptedBlock(groundState) && portal.isWithinMaxRadius(slimePos);
+            return BlockTransformations.isNetherBlock(groundState.getBlock()) && portal.isWithinMaxRadius(slimePos);
         }).stream().findFirst().ifPresent(slime -> {
             BlockPos pos = slime.getBlockPos();
             int size = slime.getSize();
@@ -679,7 +715,7 @@ public class SpreadingAlgorithm {
         world.getEntitiesByClass(HorseEntity.class, searchBox, horse -> {
             BlockPos horsePos = horse.getBlockPos();
             BlockState groundState = world.getBlockState(horsePos.down());
-            return isNetherCorruptedBlock(groundState) && portal.isWithinMaxRadius(horsePos);
+            return BlockTransformations.isNetherBlock(groundState.getBlock()) && portal.isWithinMaxRadius(horsePos);
         }).stream().findFirst().ifPresent(horse -> {
             BlockPos pos = horse.getBlockPos();
             horse.discard();

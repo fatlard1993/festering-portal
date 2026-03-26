@@ -43,6 +43,15 @@ public class BlockTransformations {
         register(Blocks.TUFF, Blocks.BASALT);
         register(Blocks.DRIPSTONE_BLOCK, Blocks.BASALT);
 
+        // === STONE BRICKS ===
+        register(Blocks.STONE_BRICKS, Blocks.POLISHED_BLACKSTONE_BRICKS);
+        register(Blocks.MOSSY_STONE_BRICKS, Blocks.POLISHED_BLACKSTONE_BRICKS);
+        register(Blocks.CRACKED_STONE_BRICKS, Blocks.CRACKED_NETHER_BRICKS);
+        register(Blocks.CHISELED_STONE_BRICKS, Blocks.CHISELED_POLISHED_BLACKSTONE);
+
+        // === BRICKS ===
+        register(Blocks.BRICKS, Blocks.NETHER_BRICKS);
+
         // === DEEPSLATE ===
         register(Blocks.DEEPSLATE, Blocks.BLACKSTONE);
         register(Blocks.COBBLED_DEEPSLATE, Blocks.BLACKSTONE);
@@ -62,7 +71,6 @@ public class BlockTransformations {
         // === FLUIDS ===
         // Water is handled specially in SpreadingAlgorithm to create supported lava pools
         // Don't register direct water->lava here
-        // register(Blocks.WATER, Blocks.LAVA);
 
         // === ICE ===
         register(Blocks.ICE, Blocks.MAGMA_BLOCK);
@@ -154,6 +162,16 @@ public class BlockTransformations {
         registerLogTransformation(Blocks.MANGROVE_WOOD, Blocks.CRIMSON_HYPHAE);
         registerLogTransformation(Blocks.CHERRY_WOOD, Blocks.WARPED_HYPHAE);
 
+        // Stripped wood
+        registerLogTransformation(Blocks.STRIPPED_OAK_WOOD, Blocks.STRIPPED_CRIMSON_HYPHAE);
+        registerLogTransformation(Blocks.STRIPPED_SPRUCE_WOOD, Blocks.STRIPPED_CRIMSON_HYPHAE);
+        registerLogTransformation(Blocks.STRIPPED_BIRCH_WOOD, Blocks.STRIPPED_WARPED_HYPHAE);
+        registerLogTransformation(Blocks.STRIPPED_JUNGLE_WOOD, Blocks.STRIPPED_CRIMSON_HYPHAE);
+        registerLogTransformation(Blocks.STRIPPED_ACACIA_WOOD, Blocks.STRIPPED_CRIMSON_HYPHAE);
+        registerLogTransformation(Blocks.STRIPPED_DARK_OAK_WOOD, Blocks.STRIPPED_CRIMSON_HYPHAE);
+        registerLogTransformation(Blocks.STRIPPED_MANGROVE_WOOD, Blocks.STRIPPED_CRIMSON_HYPHAE);
+        registerLogTransformation(Blocks.STRIPPED_CHERRY_WOOD, Blocks.STRIPPED_WARPED_HYPHAE);
+
         // === PLANKS ===
         register(Blocks.OAK_PLANKS, Blocks.CRIMSON_PLANKS);
         register(Blocks.SPRUCE_PLANKS, Blocks.CRIMSON_PLANKS);
@@ -168,8 +186,6 @@ public class BlockTransformations {
         // === ORES (to nether variants where applicable) ===
         register(Blocks.GOLD_ORE, Blocks.NETHER_GOLD_ORE);
         register(Blocks.DEEPSLATE_GOLD_ORE, Blocks.NETHER_GOLD_ORE);
-        register(Blocks.NETHER_QUARTZ_ORE, Blocks.NETHER_QUARTZ_ORE); // Already nether
-        register(Blocks.ANCIENT_DEBRIS, Blocks.ANCIENT_DEBRIS); // Keep as is
 
         // === DECORATIVE / LIGHTING ===
         register(Blocks.TORCH, Blocks.SOUL_TORCH);
@@ -230,7 +246,6 @@ public class BlockTransformations {
         register(Blocks.TORCHFLOWER_CROP, Blocks.CRIMSON_ROOTS);
 
         // === MISC ===
-        register(Blocks.BONE_BLOCK, Blocks.BONE_BLOCK); // Keep as is (fits nether)
         register(Blocks.HAY_BLOCK, Blocks.NETHER_WART_BLOCK);
         register(Blocks.MOSS_BLOCK, Blocks.NETHER_WART_BLOCK);
         register(Blocks.MOSS_CARPET, Blocks.NETHER_SPROUTS);
@@ -332,50 +347,53 @@ public class BlockTransformations {
         register(Blocks.MANGROVE_FENCE, Blocks.CRIMSON_FENCE);
         register(Blocks.CHERRY_FENCE, Blocks.WARPED_FENCE);
         register(Blocks.BAMBOO_FENCE, Blocks.WARPED_FENCE);
-        register(Blocks.NETHER_BRICK_FENCE, Blocks.NETHER_BRICK_FENCE); // Keep as is
 
-        // === FENCE GATES ===
-        register(Blocks.OAK_FENCE_GATE, Blocks.CRIMSON_FENCE_GATE);
-        register(Blocks.SPRUCE_FENCE_GATE, Blocks.CRIMSON_FENCE_GATE);
-        register(Blocks.BIRCH_FENCE_GATE, Blocks.WARPED_FENCE_GATE);
-        register(Blocks.JUNGLE_FENCE_GATE, Blocks.CRIMSON_FENCE_GATE);
-        register(Blocks.ACACIA_FENCE_GATE, Blocks.CRIMSON_FENCE_GATE);
-        register(Blocks.DARK_OAK_FENCE_GATE, Blocks.CRIMSON_FENCE_GATE);
-        register(Blocks.MANGROVE_FENCE_GATE, Blocks.CRIMSON_FENCE_GATE);
-        register(Blocks.CHERRY_FENCE_GATE, Blocks.WARPED_FENCE_GATE);
-        register(Blocks.BAMBOO_FENCE_GATE, Blocks.WARPED_FENCE_GATE);
+        // === FENCE GATES (preserve facing/open/in_wall/powered) ===
+        registerFenceGateTransformation(Blocks.OAK_FENCE_GATE, Blocks.CRIMSON_FENCE_GATE);
+        registerFenceGateTransformation(Blocks.SPRUCE_FENCE_GATE, Blocks.CRIMSON_FENCE_GATE);
+        registerFenceGateTransformation(Blocks.BIRCH_FENCE_GATE, Blocks.WARPED_FENCE_GATE);
+        registerFenceGateTransformation(Blocks.JUNGLE_FENCE_GATE, Blocks.CRIMSON_FENCE_GATE);
+        registerFenceGateTransformation(Blocks.ACACIA_FENCE_GATE, Blocks.CRIMSON_FENCE_GATE);
+        registerFenceGateTransformation(Blocks.DARK_OAK_FENCE_GATE, Blocks.CRIMSON_FENCE_GATE);
+        registerFenceGateTransformation(Blocks.MANGROVE_FENCE_GATE, Blocks.CRIMSON_FENCE_GATE);
+        registerFenceGateTransformation(Blocks.CHERRY_FENCE_GATE, Blocks.WARPED_FENCE_GATE);
+        registerFenceGateTransformation(Blocks.BAMBOO_FENCE_GATE, Blocks.WARPED_FENCE_GATE);
 
-        // === DOORS & TRAPDOORS ===
-        register(Blocks.OAK_DOOR, Blocks.CRIMSON_DOOR);
-        register(Blocks.SPRUCE_DOOR, Blocks.CRIMSON_DOOR);
-        register(Blocks.BIRCH_DOOR, Blocks.WARPED_DOOR);
-        register(Blocks.JUNGLE_DOOR, Blocks.CRIMSON_DOOR);
-        register(Blocks.ACACIA_DOOR, Blocks.CRIMSON_DOOR);
-        register(Blocks.DARK_OAK_DOOR, Blocks.CRIMSON_DOOR);
-        register(Blocks.MANGROVE_DOOR, Blocks.CRIMSON_DOOR);
-        register(Blocks.CHERRY_DOOR, Blocks.WARPED_DOOR);
-        register(Blocks.BAMBOO_DOOR, Blocks.WARPED_DOOR);
-        register(Blocks.OAK_TRAPDOOR, Blocks.CRIMSON_TRAPDOOR);
-        register(Blocks.SPRUCE_TRAPDOOR, Blocks.CRIMSON_TRAPDOOR);
-        register(Blocks.BIRCH_TRAPDOOR, Blocks.WARPED_TRAPDOOR);
-        register(Blocks.JUNGLE_TRAPDOOR, Blocks.CRIMSON_TRAPDOOR);
-        register(Blocks.ACACIA_TRAPDOOR, Blocks.CRIMSON_TRAPDOOR);
-        register(Blocks.DARK_OAK_TRAPDOOR, Blocks.CRIMSON_TRAPDOOR);
-        register(Blocks.MANGROVE_TRAPDOOR, Blocks.CRIMSON_TRAPDOOR);
-        register(Blocks.CHERRY_TRAPDOOR, Blocks.WARPED_TRAPDOOR);
-        register(Blocks.BAMBOO_TRAPDOOR, Blocks.WARPED_TRAPDOOR);
+        // === DOORS (preserve facing/half/hinge/open/powered) ===
+        registerDoorTransformation(Blocks.OAK_DOOR, Blocks.CRIMSON_DOOR);
+        registerDoorTransformation(Blocks.SPRUCE_DOOR, Blocks.CRIMSON_DOOR);
+        registerDoorTransformation(Blocks.BIRCH_DOOR, Blocks.WARPED_DOOR);
+        registerDoorTransformation(Blocks.JUNGLE_DOOR, Blocks.CRIMSON_DOOR);
+        registerDoorTransformation(Blocks.ACACIA_DOOR, Blocks.CRIMSON_DOOR);
+        registerDoorTransformation(Blocks.DARK_OAK_DOOR, Blocks.CRIMSON_DOOR);
+        registerDoorTransformation(Blocks.MANGROVE_DOOR, Blocks.CRIMSON_DOOR);
+        registerDoorTransformation(Blocks.CHERRY_DOOR, Blocks.WARPED_DOOR);
+        registerDoorTransformation(Blocks.BAMBOO_DOOR, Blocks.WARPED_DOOR);
 
-        // === BUTTONS & PRESSURE PLATES ===
-        register(Blocks.OAK_BUTTON, Blocks.CRIMSON_BUTTON);
-        register(Blocks.SPRUCE_BUTTON, Blocks.CRIMSON_BUTTON);
-        register(Blocks.BIRCH_BUTTON, Blocks.WARPED_BUTTON);
-        register(Blocks.JUNGLE_BUTTON, Blocks.CRIMSON_BUTTON);
-        register(Blocks.ACACIA_BUTTON, Blocks.CRIMSON_BUTTON);
-        register(Blocks.DARK_OAK_BUTTON, Blocks.CRIMSON_BUTTON);
-        register(Blocks.MANGROVE_BUTTON, Blocks.CRIMSON_BUTTON);
-        register(Blocks.CHERRY_BUTTON, Blocks.WARPED_BUTTON);
-        register(Blocks.BAMBOO_BUTTON, Blocks.WARPED_BUTTON);
-        register(Blocks.STONE_BUTTON, Blocks.POLISHED_BLACKSTONE_BUTTON);
+        // === TRAPDOORS (preserve facing/half/open/powered/waterlogged) ===
+        registerTrapdoorTransformation(Blocks.OAK_TRAPDOOR, Blocks.CRIMSON_TRAPDOOR);
+        registerTrapdoorTransformation(Blocks.SPRUCE_TRAPDOOR, Blocks.CRIMSON_TRAPDOOR);
+        registerTrapdoorTransformation(Blocks.BIRCH_TRAPDOOR, Blocks.WARPED_TRAPDOOR);
+        registerTrapdoorTransformation(Blocks.JUNGLE_TRAPDOOR, Blocks.CRIMSON_TRAPDOOR);
+        registerTrapdoorTransformation(Blocks.ACACIA_TRAPDOOR, Blocks.CRIMSON_TRAPDOOR);
+        registerTrapdoorTransformation(Blocks.DARK_OAK_TRAPDOOR, Blocks.CRIMSON_TRAPDOOR);
+        registerTrapdoorTransformation(Blocks.MANGROVE_TRAPDOOR, Blocks.CRIMSON_TRAPDOOR);
+        registerTrapdoorTransformation(Blocks.CHERRY_TRAPDOOR, Blocks.WARPED_TRAPDOOR);
+        registerTrapdoorTransformation(Blocks.BAMBOO_TRAPDOOR, Blocks.WARPED_TRAPDOOR);
+
+        // === BUTTONS (preserve face/facing/powered) ===
+        registerButtonTransformation(Blocks.OAK_BUTTON, Blocks.CRIMSON_BUTTON);
+        registerButtonTransformation(Blocks.SPRUCE_BUTTON, Blocks.CRIMSON_BUTTON);
+        registerButtonTransformation(Blocks.BIRCH_BUTTON, Blocks.WARPED_BUTTON);
+        registerButtonTransformation(Blocks.JUNGLE_BUTTON, Blocks.CRIMSON_BUTTON);
+        registerButtonTransformation(Blocks.ACACIA_BUTTON, Blocks.CRIMSON_BUTTON);
+        registerButtonTransformation(Blocks.DARK_OAK_BUTTON, Blocks.CRIMSON_BUTTON);
+        registerButtonTransformation(Blocks.MANGROVE_BUTTON, Blocks.CRIMSON_BUTTON);
+        registerButtonTransformation(Blocks.CHERRY_BUTTON, Blocks.WARPED_BUTTON);
+        registerButtonTransformation(Blocks.BAMBOO_BUTTON, Blocks.WARPED_BUTTON);
+        registerButtonTransformation(Blocks.STONE_BUTTON, Blocks.POLISHED_BLACKSTONE_BUTTON);
+
+        // === PRESSURE PLATES ===
         register(Blocks.OAK_PRESSURE_PLATE, Blocks.CRIMSON_PRESSURE_PLATE);
         register(Blocks.SPRUCE_PRESSURE_PLATE, Blocks.CRIMSON_PRESSURE_PLATE);
         register(Blocks.BIRCH_PRESSURE_PLATE, Blocks.WARPED_PRESSURE_PLATE);
@@ -400,6 +418,210 @@ public class BlockTransformations {
         register(Blocks.ACACIA_WALL_SIGN, Blocks.CRIMSON_WALL_SIGN);
         register(Blocks.DARK_OAK_SIGN, Blocks.CRIMSON_SIGN);
         register(Blocks.DARK_OAK_WALL_SIGN, Blocks.CRIMSON_WALL_SIGN);
+
+        // === WOOL (warm colors -> NETHER_WART_BLOCK, cool colors -> WARPED_WART_BLOCK) ===
+        register(Blocks.WHITE_WOOL, Blocks.NETHER_WART_BLOCK);
+        register(Blocks.ORANGE_WOOL, Blocks.NETHER_WART_BLOCK);
+        register(Blocks.MAGENTA_WOOL, Blocks.WARPED_WART_BLOCK);
+        register(Blocks.LIGHT_BLUE_WOOL, Blocks.WARPED_WART_BLOCK);
+        register(Blocks.YELLOW_WOOL, Blocks.NETHER_WART_BLOCK);
+        register(Blocks.LIME_WOOL, Blocks.WARPED_WART_BLOCK);
+        register(Blocks.PINK_WOOL, Blocks.NETHER_WART_BLOCK);
+        register(Blocks.GRAY_WOOL, Blocks.NETHER_WART_BLOCK);
+        register(Blocks.LIGHT_GRAY_WOOL, Blocks.WARPED_WART_BLOCK);
+        register(Blocks.CYAN_WOOL, Blocks.WARPED_WART_BLOCK);
+        register(Blocks.PURPLE_WOOL, Blocks.WARPED_WART_BLOCK);
+        register(Blocks.BLUE_WOOL, Blocks.WARPED_WART_BLOCK);
+        register(Blocks.BROWN_WOOL, Blocks.NETHER_WART_BLOCK);
+        register(Blocks.GREEN_WOOL, Blocks.WARPED_WART_BLOCK);
+        register(Blocks.RED_WOOL, Blocks.NETHER_WART_BLOCK);
+        register(Blocks.BLACK_WOOL, Blocks.NETHER_WART_BLOCK);
+
+        // === CARPET (warm -> NETHER_SPROUTS, cool -> WARPED_ROOTS) ===
+        register(Blocks.WHITE_CARPET, Blocks.NETHER_SPROUTS);
+        register(Blocks.ORANGE_CARPET, Blocks.NETHER_SPROUTS);
+        register(Blocks.MAGENTA_CARPET, Blocks.WARPED_ROOTS);
+        register(Blocks.LIGHT_BLUE_CARPET, Blocks.WARPED_ROOTS);
+        register(Blocks.YELLOW_CARPET, Blocks.NETHER_SPROUTS);
+        register(Blocks.LIME_CARPET, Blocks.WARPED_ROOTS);
+        register(Blocks.PINK_CARPET, Blocks.NETHER_SPROUTS);
+        register(Blocks.GRAY_CARPET, Blocks.NETHER_SPROUTS);
+        register(Blocks.LIGHT_GRAY_CARPET, Blocks.WARPED_ROOTS);
+        register(Blocks.CYAN_CARPET, Blocks.WARPED_ROOTS);
+        register(Blocks.PURPLE_CARPET, Blocks.WARPED_ROOTS);
+        register(Blocks.BLUE_CARPET, Blocks.WARPED_ROOTS);
+        register(Blocks.BROWN_CARPET, Blocks.NETHER_SPROUTS);
+        register(Blocks.GREEN_CARPET, Blocks.WARPED_ROOTS);
+        register(Blocks.RED_CARPET, Blocks.NETHER_SPROUTS);
+        register(Blocks.BLACK_CARPET, Blocks.NETHER_SPROUTS);
+
+        // === CONCRETE (all colors -> BLACKSTONE) ===
+        register(Blocks.WHITE_CONCRETE, Blocks.BLACKSTONE);
+        register(Blocks.ORANGE_CONCRETE, Blocks.BLACKSTONE);
+        register(Blocks.MAGENTA_CONCRETE, Blocks.BLACKSTONE);
+        register(Blocks.LIGHT_BLUE_CONCRETE, Blocks.BLACKSTONE);
+        register(Blocks.YELLOW_CONCRETE, Blocks.BLACKSTONE);
+        register(Blocks.LIME_CONCRETE, Blocks.BLACKSTONE);
+        register(Blocks.PINK_CONCRETE, Blocks.BLACKSTONE);
+        register(Blocks.GRAY_CONCRETE, Blocks.BLACKSTONE);
+        register(Blocks.LIGHT_GRAY_CONCRETE, Blocks.BLACKSTONE);
+        register(Blocks.CYAN_CONCRETE, Blocks.BLACKSTONE);
+        register(Blocks.PURPLE_CONCRETE, Blocks.BLACKSTONE);
+        register(Blocks.BLUE_CONCRETE, Blocks.BLACKSTONE);
+        register(Blocks.BROWN_CONCRETE, Blocks.BLACKSTONE);
+        register(Blocks.GREEN_CONCRETE, Blocks.BLACKSTONE);
+        register(Blocks.RED_CONCRETE, Blocks.BLACKSTONE);
+        register(Blocks.BLACK_CONCRETE, Blocks.BLACKSTONE);
+
+        // === CONCRETE POWDER (all colors -> SOUL_SAND) ===
+        register(Blocks.WHITE_CONCRETE_POWDER, Blocks.SOUL_SAND);
+        register(Blocks.ORANGE_CONCRETE_POWDER, Blocks.SOUL_SAND);
+        register(Blocks.MAGENTA_CONCRETE_POWDER, Blocks.SOUL_SAND);
+        register(Blocks.LIGHT_BLUE_CONCRETE_POWDER, Blocks.SOUL_SAND);
+        register(Blocks.YELLOW_CONCRETE_POWDER, Blocks.SOUL_SAND);
+        register(Blocks.LIME_CONCRETE_POWDER, Blocks.SOUL_SAND);
+        register(Blocks.PINK_CONCRETE_POWDER, Blocks.SOUL_SAND);
+        register(Blocks.GRAY_CONCRETE_POWDER, Blocks.SOUL_SAND);
+        register(Blocks.LIGHT_GRAY_CONCRETE_POWDER, Blocks.SOUL_SAND);
+        register(Blocks.CYAN_CONCRETE_POWDER, Blocks.SOUL_SAND);
+        register(Blocks.PURPLE_CONCRETE_POWDER, Blocks.SOUL_SAND);
+        register(Blocks.BLUE_CONCRETE_POWDER, Blocks.SOUL_SAND);
+        register(Blocks.BROWN_CONCRETE_POWDER, Blocks.SOUL_SAND);
+        register(Blocks.GREEN_CONCRETE_POWDER, Blocks.SOUL_SAND);
+        register(Blocks.RED_CONCRETE_POWDER, Blocks.SOUL_SAND);
+        register(Blocks.BLACK_CONCRETE_POWDER, Blocks.SOUL_SAND);
+
+        // === TERRACOTTA (unglazed -> NETHERRACK, glazed -> NETHER_BRICKS) ===
+        register(Blocks.TERRACOTTA, Blocks.NETHERRACK);
+        register(Blocks.WHITE_TERRACOTTA, Blocks.NETHERRACK);
+        register(Blocks.ORANGE_TERRACOTTA, Blocks.NETHERRACK);
+        register(Blocks.MAGENTA_TERRACOTTA, Blocks.NETHERRACK);
+        register(Blocks.LIGHT_BLUE_TERRACOTTA, Blocks.NETHERRACK);
+        register(Blocks.YELLOW_TERRACOTTA, Blocks.NETHERRACK);
+        register(Blocks.LIME_TERRACOTTA, Blocks.NETHERRACK);
+        register(Blocks.PINK_TERRACOTTA, Blocks.NETHERRACK);
+        register(Blocks.GRAY_TERRACOTTA, Blocks.NETHERRACK);
+        register(Blocks.LIGHT_GRAY_TERRACOTTA, Blocks.NETHERRACK);
+        register(Blocks.CYAN_TERRACOTTA, Blocks.NETHERRACK);
+        register(Blocks.PURPLE_TERRACOTTA, Blocks.NETHERRACK);
+        register(Blocks.BLUE_TERRACOTTA, Blocks.NETHERRACK);
+        register(Blocks.BROWN_TERRACOTTA, Blocks.NETHERRACK);
+        register(Blocks.GREEN_TERRACOTTA, Blocks.NETHERRACK);
+        register(Blocks.RED_TERRACOTTA, Blocks.NETHERRACK);
+        register(Blocks.BLACK_TERRACOTTA, Blocks.NETHERRACK);
+        register(Blocks.WHITE_GLAZED_TERRACOTTA, Blocks.NETHER_BRICKS);
+        register(Blocks.ORANGE_GLAZED_TERRACOTTA, Blocks.NETHER_BRICKS);
+        register(Blocks.MAGENTA_GLAZED_TERRACOTTA, Blocks.NETHER_BRICKS);
+        register(Blocks.LIGHT_BLUE_GLAZED_TERRACOTTA, Blocks.NETHER_BRICKS);
+        register(Blocks.YELLOW_GLAZED_TERRACOTTA, Blocks.NETHER_BRICKS);
+        register(Blocks.LIME_GLAZED_TERRACOTTA, Blocks.NETHER_BRICKS);
+        register(Blocks.PINK_GLAZED_TERRACOTTA, Blocks.NETHER_BRICKS);
+        register(Blocks.GRAY_GLAZED_TERRACOTTA, Blocks.NETHER_BRICKS);
+        register(Blocks.LIGHT_GRAY_GLAZED_TERRACOTTA, Blocks.NETHER_BRICKS);
+        register(Blocks.CYAN_GLAZED_TERRACOTTA, Blocks.NETHER_BRICKS);
+        register(Blocks.PURPLE_GLAZED_TERRACOTTA, Blocks.NETHER_BRICKS);
+        register(Blocks.BLUE_GLAZED_TERRACOTTA, Blocks.NETHER_BRICKS);
+        register(Blocks.BROWN_GLAZED_TERRACOTTA, Blocks.NETHER_BRICKS);
+        register(Blocks.GREEN_GLAZED_TERRACOTTA, Blocks.NETHER_BRICKS);
+        register(Blocks.RED_GLAZED_TERRACOTTA, Blocks.NETHER_BRICKS);
+        register(Blocks.BLACK_GLAZED_TERRACOTTA, Blocks.NETHER_BRICKS);
+
+        // === STAINED GLASS (all colors -> TINTED_GLASS) ===
+        register(Blocks.WHITE_STAINED_GLASS, Blocks.TINTED_GLASS);
+        register(Blocks.ORANGE_STAINED_GLASS, Blocks.TINTED_GLASS);
+        register(Blocks.MAGENTA_STAINED_GLASS, Blocks.TINTED_GLASS);
+        register(Blocks.LIGHT_BLUE_STAINED_GLASS, Blocks.TINTED_GLASS);
+        register(Blocks.YELLOW_STAINED_GLASS, Blocks.TINTED_GLASS);
+        register(Blocks.LIME_STAINED_GLASS, Blocks.TINTED_GLASS);
+        register(Blocks.PINK_STAINED_GLASS, Blocks.TINTED_GLASS);
+        register(Blocks.GRAY_STAINED_GLASS, Blocks.TINTED_GLASS);
+        register(Blocks.LIGHT_GRAY_STAINED_GLASS, Blocks.TINTED_GLASS);
+        register(Blocks.CYAN_STAINED_GLASS, Blocks.TINTED_GLASS);
+        register(Blocks.PURPLE_STAINED_GLASS, Blocks.TINTED_GLASS);
+        register(Blocks.BLUE_STAINED_GLASS, Blocks.TINTED_GLASS);
+        register(Blocks.BROWN_STAINED_GLASS, Blocks.TINTED_GLASS);
+        register(Blocks.GREEN_STAINED_GLASS, Blocks.TINTED_GLASS);
+        register(Blocks.RED_STAINED_GLASS, Blocks.TINTED_GLASS);
+        register(Blocks.BLACK_STAINED_GLASS, Blocks.TINTED_GLASS);
+
+        // === STAINED GLASS PANES (all colors -> IRON_BARS) ===
+        register(Blocks.WHITE_STAINED_GLASS_PANE, Blocks.IRON_BARS);
+        register(Blocks.ORANGE_STAINED_GLASS_PANE, Blocks.IRON_BARS);
+        register(Blocks.MAGENTA_STAINED_GLASS_PANE, Blocks.IRON_BARS);
+        register(Blocks.LIGHT_BLUE_STAINED_GLASS_PANE, Blocks.IRON_BARS);
+        register(Blocks.YELLOW_STAINED_GLASS_PANE, Blocks.IRON_BARS);
+        register(Blocks.LIME_STAINED_GLASS_PANE, Blocks.IRON_BARS);
+        register(Blocks.PINK_STAINED_GLASS_PANE, Blocks.IRON_BARS);
+        register(Blocks.GRAY_STAINED_GLASS_PANE, Blocks.IRON_BARS);
+        register(Blocks.LIGHT_GRAY_STAINED_GLASS_PANE, Blocks.IRON_BARS);
+        register(Blocks.CYAN_STAINED_GLASS_PANE, Blocks.IRON_BARS);
+        register(Blocks.PURPLE_STAINED_GLASS_PANE, Blocks.IRON_BARS);
+        register(Blocks.BLUE_STAINED_GLASS_PANE, Blocks.IRON_BARS);
+        register(Blocks.BROWN_STAINED_GLASS_PANE, Blocks.IRON_BARS);
+        register(Blocks.GREEN_STAINED_GLASS_PANE, Blocks.IRON_BARS);
+        register(Blocks.RED_STAINED_GLASS_PANE, Blocks.IRON_BARS);
+        register(Blocks.BLACK_STAINED_GLASS_PANE, Blocks.IRON_BARS);
+
+        // === COPPER FAMILY ===
+        register(Blocks.COPPER_BLOCK, Blocks.NETHER_BRICKS);
+        register(Blocks.EXPOSED_COPPER, Blocks.NETHER_BRICKS);
+        register(Blocks.WEATHERED_COPPER, Blocks.NETHER_BRICKS);
+        register(Blocks.OXIDIZED_COPPER, Blocks.NETHER_BRICKS);
+        register(Blocks.CUT_COPPER, Blocks.NETHER_BRICKS);
+        register(Blocks.EXPOSED_CUT_COPPER, Blocks.NETHER_BRICKS);
+        register(Blocks.WEATHERED_CUT_COPPER, Blocks.NETHER_BRICKS);
+        register(Blocks.OXIDIZED_CUT_COPPER, Blocks.NETHER_BRICKS);
+        register(Blocks.WAXED_COPPER_BLOCK, Blocks.NETHER_BRICKS);
+        register(Blocks.WAXED_EXPOSED_COPPER, Blocks.NETHER_BRICKS);
+        register(Blocks.WAXED_WEATHERED_COPPER, Blocks.NETHER_BRICKS);
+        register(Blocks.WAXED_OXIDIZED_COPPER, Blocks.NETHER_BRICKS);
+        register(Blocks.WAXED_CUT_COPPER, Blocks.NETHER_BRICKS);
+        register(Blocks.WAXED_EXPOSED_CUT_COPPER, Blocks.NETHER_BRICKS);
+        register(Blocks.WAXED_WEATHERED_CUT_COPPER, Blocks.NETHER_BRICKS);
+        register(Blocks.WAXED_OXIDIZED_CUT_COPPER, Blocks.NETHER_BRICKS);
+
+        // === PRISMARINE ===
+        register(Blocks.PRISMARINE, Blocks.NETHER_BRICKS);
+        register(Blocks.PRISMARINE_BRICKS, Blocks.NETHER_BRICKS);
+        register(Blocks.DARK_PRISMARINE, Blocks.RED_NETHER_BRICKS);
+
+        // === END STONE ===
+        register(Blocks.END_STONE, Blocks.BASALT);
+        register(Blocks.END_STONE_BRICKS, Blocks.POLISHED_BLACKSTONE_BRICKS);
+
+        // === PURPUR ===
+        register(Blocks.PURPUR_BLOCK, Blocks.NETHER_BRICKS);
+        register(Blocks.PURPUR_PILLAR, Blocks.BASALT);
+
+        // === QUARTZ (overworld crafted blocks) ===
+        register(Blocks.QUARTZ_BLOCK, Blocks.BASALT);
+        register(Blocks.CHISELED_QUARTZ_BLOCK, Blocks.POLISHED_BASALT);
+        register(Blocks.QUARTZ_BRICKS, Blocks.POLISHED_BLACKSTONE_BRICKS);
+        register(Blocks.SMOOTH_QUARTZ, Blocks.SMOOTH_BASALT);
+        register(Blocks.QUARTZ_PILLAR, Blocks.POLISHED_BASALT);
+
+        // === MUD BRICKS ===
+        register(Blocks.MUD_BRICKS, Blocks.NETHER_BRICKS);
+
+        // === MISC BUILDING BLOCKS ===
+        register(Blocks.BOOKSHELF, Blocks.NETHER_WART_BLOCK);
+        register(Blocks.CHISELED_BOOKSHELF, Blocks.NETHER_WART_BLOCK);
+        register(Blocks.LADDER, Blocks.AIR);
+        register(Blocks.SCAFFOLDING, Blocks.AIR);
+        register(Blocks.POINTED_DRIPSTONE, Blocks.AIR);
+        register(Blocks.HANGING_ROOTS, Blocks.WARPED_ROOTS);
+        register(Blocks.SPORE_BLOSSOM, Blocks.CRIMSON_FUNGUS);
+        register(Blocks.BIG_DRIPLEAF, Blocks.AIR);
+        register(Blocks.BIG_DRIPLEAF_STEM, Blocks.AIR);
+        register(Blocks.SMALL_DRIPLEAF, Blocks.AIR);
+
+        // === AMETHYST ===
+        register(Blocks.AMETHYST_BLOCK, Blocks.BASALT);
+        register(Blocks.BUDDING_AMETHYST, Blocks.BASALT);
+        register(Blocks.SMALL_AMETHYST_BUD, Blocks.AIR);
+        register(Blocks.MEDIUM_AMETHYST_BUD, Blocks.AIR);
+        register(Blocks.LARGE_AMETHYST_BUD, Blocks.AIR);
+        register(Blocks.AMETHYST_CLUSTER, Blocks.AIR);
     }
 
     /**
@@ -466,6 +688,101 @@ public class BlockTransformations {
         });
     }
 
+    /**
+     * Register a door transformation that preserves HORIZONTAL_FACING, DOUBLE_BLOCK_HALF,
+     * DOOR_HINGE, OPEN, and POWERED properties.
+     */
+    private static void registerDoorTransformation(Block from, Block to) {
+        STATE_TRANSFORMATIONS.put(from, state -> {
+            BlockState newState = to.getDefaultState();
+            if (state.contains(Properties.HORIZONTAL_FACING) && newState.contains(Properties.HORIZONTAL_FACING)) {
+                newState = newState.with(Properties.HORIZONTAL_FACING, state.get(Properties.HORIZONTAL_FACING));
+            }
+            if (state.contains(Properties.DOUBLE_BLOCK_HALF) && newState.contains(Properties.DOUBLE_BLOCK_HALF)) {
+                newState = newState.with(Properties.DOUBLE_BLOCK_HALF, state.get(Properties.DOUBLE_BLOCK_HALF));
+            }
+            if (state.contains(Properties.DOOR_HINGE) && newState.contains(Properties.DOOR_HINGE)) {
+                newState = newState.with(Properties.DOOR_HINGE, state.get(Properties.DOOR_HINGE));
+            }
+            if (state.contains(Properties.OPEN) && newState.contains(Properties.OPEN)) {
+                newState = newState.with(Properties.OPEN, state.get(Properties.OPEN));
+            }
+            if (state.contains(Properties.POWERED) && newState.contains(Properties.POWERED)) {
+                newState = newState.with(Properties.POWERED, state.get(Properties.POWERED));
+            }
+            return newState;
+        });
+    }
+
+    /**
+     * Register a trapdoor transformation that preserves HORIZONTAL_FACING, BLOCK_HALF,
+     * OPEN, POWERED, and WATERLOGGED properties.
+     */
+    private static void registerTrapdoorTransformation(Block from, Block to) {
+        STATE_TRANSFORMATIONS.put(from, state -> {
+            BlockState newState = to.getDefaultState();
+            if (state.contains(Properties.HORIZONTAL_FACING) && newState.contains(Properties.HORIZONTAL_FACING)) {
+                newState = newState.with(Properties.HORIZONTAL_FACING, state.get(Properties.HORIZONTAL_FACING));
+            }
+            if (state.contains(Properties.BLOCK_HALF) && newState.contains(Properties.BLOCK_HALF)) {
+                newState = newState.with(Properties.BLOCK_HALF, state.get(Properties.BLOCK_HALF));
+            }
+            if (state.contains(Properties.OPEN) && newState.contains(Properties.OPEN)) {
+                newState = newState.with(Properties.OPEN, state.get(Properties.OPEN));
+            }
+            if (state.contains(Properties.POWERED) && newState.contains(Properties.POWERED)) {
+                newState = newState.with(Properties.POWERED, state.get(Properties.POWERED));
+            }
+            if (state.contains(Properties.WATERLOGGED) && newState.contains(Properties.WATERLOGGED)) {
+                newState = newState.with(Properties.WATERLOGGED, state.get(Properties.WATERLOGGED));
+            }
+            return newState;
+        });
+    }
+
+    /**
+     * Register a fence gate transformation that preserves HORIZONTAL_FACING, IN_WALL,
+     * OPEN, and POWERED properties.
+     */
+    private static void registerFenceGateTransformation(Block from, Block to) {
+        STATE_TRANSFORMATIONS.put(from, state -> {
+            BlockState newState = to.getDefaultState();
+            if (state.contains(Properties.HORIZONTAL_FACING) && newState.contains(Properties.HORIZONTAL_FACING)) {
+                newState = newState.with(Properties.HORIZONTAL_FACING, state.get(Properties.HORIZONTAL_FACING));
+            }
+            if (state.contains(Properties.IN_WALL) && newState.contains(Properties.IN_WALL)) {
+                newState = newState.with(Properties.IN_WALL, state.get(Properties.IN_WALL));
+            }
+            if (state.contains(Properties.OPEN) && newState.contains(Properties.OPEN)) {
+                newState = newState.with(Properties.OPEN, state.get(Properties.OPEN));
+            }
+            if (state.contains(Properties.POWERED) && newState.contains(Properties.POWERED)) {
+                newState = newState.with(Properties.POWERED, state.get(Properties.POWERED));
+            }
+            return newState;
+        });
+    }
+
+    /**
+     * Register a button transformation that preserves BLOCK_FACE (floor/wall/ceiling),
+     * HORIZONTAL_FACING, and POWERED properties.
+     */
+    private static void registerButtonTransformation(Block from, Block to) {
+        STATE_TRANSFORMATIONS.put(from, state -> {
+            BlockState newState = to.getDefaultState();
+            if (state.contains(Properties.BLOCK_FACE) && newState.contains(Properties.BLOCK_FACE)) {
+                newState = newState.with(Properties.BLOCK_FACE, state.get(Properties.BLOCK_FACE));
+            }
+            if (state.contains(Properties.HORIZONTAL_FACING) && newState.contains(Properties.HORIZONTAL_FACING)) {
+                newState = newState.with(Properties.HORIZONTAL_FACING, state.get(Properties.HORIZONTAL_FACING));
+            }
+            if (state.contains(Properties.POWERED) && newState.contains(Properties.POWERED)) {
+                newState = newState.with(Properties.POWERED, state.get(Properties.POWERED));
+            }
+            return newState;
+        });
+    }
+
     // Base nether materials for random diversity
     private static final Block[] BASE_NETHER_TERRAIN = {
         Blocks.NETHERRACK,
@@ -484,16 +801,15 @@ public class BlockTransformations {
         Blocks.POLISHED_BLACKSTONE
     };
 
-    private static final java.util.Random RANDOM = new java.util.Random();
-
     /**
      * Get the transformation result for a block state.
      * Has a 20% chance to substitute a random alternative base nether material.
      *
      * @param input The input block state
+     * @param random The random source to use for diversity rolls
      * @return The transformed block state, or null if no transformation exists
      */
-    public static BlockState getTransformation(BlockState input) {
+    public static BlockState getTransformation(BlockState input, net.minecraft.util.math.random.Random random) {
         Block inputBlock = input.getBlock();
 
         // Check state-preserving transformations first
@@ -510,8 +826,8 @@ public class BlockTransformations {
             }
 
             // 20% chance to substitute with random alternative
-            if (RANDOM.nextFloat() < 0.20f) {
-                outputBlock = getRandomAlternative(outputBlock);
+            if (random.nextFloat() < 0.20f) {
+                outputBlock = getRandomAlternative(outputBlock, random);
             }
 
             return outputBlock.getDefaultState();
@@ -525,47 +841,47 @@ public class BlockTransformations {
      * Get a random alternative block for diversity.
      * Returns the original if no alternatives apply.
      */
-    private static Block getRandomAlternative(Block original) {
+    private static Block getRandomAlternative(Block original, net.minecraft.util.math.random.Random random) {
         // Terrain blocks (grass, dirt, etc -> netherrack/soul soil)
         if (original == Blocks.NETHERRACK || original == Blocks.SOUL_SOIL || original == Blocks.SOUL_SAND) {
-            return BASE_NETHER_TERRAIN[RANDOM.nextInt(BASE_NETHER_TERRAIN.length)];
+            return BASE_NETHER_TERRAIN[random.nextInt(BASE_NETHER_TERRAIN.length)];
         }
 
         // Stone blocks (stone, cobble, etc -> basalt/blackstone)
         if (original == Blocks.BASALT || original == Blocks.BLACKSTONE) {
-            return BASE_NETHER_STONE[RANDOM.nextInt(BASE_NETHER_STONE.length)];
+            return BASE_NETHER_STONE[random.nextInt(BASE_NETHER_STONE.length)];
         }
 
         // Wart blocks can swap between crimson/warped
         if (original == Blocks.NETHER_WART_BLOCK) {
-            return RANDOM.nextBoolean() ? Blocks.NETHER_WART_BLOCK : Blocks.WARPED_WART_BLOCK;
+            return random.nextBoolean() ? Blocks.NETHER_WART_BLOCK : Blocks.WARPED_WART_BLOCK;
         }
         if (original == Blocks.WARPED_WART_BLOCK) {
-            return RANDOM.nextBoolean() ? Blocks.WARPED_WART_BLOCK : Blocks.NETHER_WART_BLOCK;
+            return random.nextBoolean() ? Blocks.WARPED_WART_BLOCK : Blocks.NETHER_WART_BLOCK;
         }
 
         // Stems can swap between crimson/warped
         if (original == Blocks.CRIMSON_STEM) {
-            return RANDOM.nextBoolean() ? Blocks.CRIMSON_STEM : Blocks.WARPED_STEM;
+            return random.nextBoolean() ? Blocks.CRIMSON_STEM : Blocks.WARPED_STEM;
         }
         if (original == Blocks.WARPED_STEM) {
-            return RANDOM.nextBoolean() ? Blocks.WARPED_STEM : Blocks.CRIMSON_STEM;
+            return random.nextBoolean() ? Blocks.WARPED_STEM : Blocks.CRIMSON_STEM;
         }
 
         // Nether bricks can become red nether bricks
         if (original == Blocks.NETHER_BRICKS) {
-            return RANDOM.nextBoolean() ? Blocks.NETHER_BRICKS : Blocks.RED_NETHER_BRICKS;
+            return random.nextBoolean() ? Blocks.NETHER_BRICKS : Blocks.RED_NETHER_BRICKS;
         }
 
         // Roots/sprouts can vary
         if (original == Blocks.CRIMSON_ROOTS || original == Blocks.WARPED_ROOTS || original == Blocks.NETHER_SPROUTS) {
             Block[] roots = {Blocks.CRIMSON_ROOTS, Blocks.WARPED_ROOTS, Blocks.NETHER_SPROUTS};
-            return roots[RANDOM.nextInt(roots.length)];
+            return roots[random.nextInt(roots.length)];
         }
 
         // Fungus can vary
         if (original == Blocks.CRIMSON_FUNGUS || original == Blocks.WARPED_FUNGUS) {
-            return RANDOM.nextBoolean() ? Blocks.CRIMSON_FUNGUS : Blocks.WARPED_FUNGUS;
+            return random.nextBoolean() ? Blocks.CRIMSON_FUNGUS : Blocks.WARPED_FUNGUS;
         }
 
         return original;
@@ -595,7 +911,7 @@ public class BlockTransformations {
                 block == Blocks.END_PORTAL_FRAME || block == Blocks.END_PORTAL ||
                 block == Blocks.COMMAND_BLOCK || block == Blocks.CHAIN_COMMAND_BLOCK ||
                 block == Blocks.REPEATING_COMMAND_BLOCK || block == Blocks.STRUCTURE_BLOCK ||
-                block == Blocks.JIGSAW) {
+                block == Blocks.JIGSAW || block == Blocks.REINFORCED_DEEPSLATE) {
             return true;
         }
 
@@ -623,17 +939,22 @@ public class BlockTransformations {
     public static BlockState getMatureTransformation(BlockState currentState, NeighborContext neighbors) {
         Block block = currentState.getBlock();
 
-        // Netherrack can become nylium if near fungus/stems
+        // Netherrack can become nylium if near fungus/stems, or magma near lava
         if (block == Blocks.NETHERRACK) {
+            // Graduated lava checks (higher lava count = higher chance)
+            int lavaCount = neighbors.getLavaCount();
+            if (lavaCount >= 2 && neighbors.random.nextFloat() < 0.25f) {
+                return Blocks.MAGMA_BLOCK.getDefaultState();
+            }
+            if (neighbors.hasLava() && neighbors.random.nextFloat() < 0.15f) {
+                return Blocks.MAGMA_BLOCK.getDefaultState();
+            }
+            // Nylium checks
             if (neighbors.hasCrimsonInfluence() && neighbors.random.nextFloat() < 0.3f) {
                 return Blocks.CRIMSON_NYLIUM.getDefaultState();
             }
             if (neighbors.hasWarpedInfluence() && neighbors.random.nextFloat() < 0.3f) {
                 return Blocks.WARPED_NYLIUM.getDefaultState();
-            }
-            // Near lava, can become magma
-            if (neighbors.hasLava() && neighbors.random.nextFloat() < 0.15f) {
-                return Blocks.MAGMA_BLOCK.getDefaultState();
             }
         }
 
@@ -684,7 +1005,6 @@ public class BlockTransformations {
             if (neighbors.hasWater() && neighbors.random.nextFloat() < 0.3f) {
                 return Blocks.BLACKSTONE.getDefaultState();
             }
-            // Note: Lava expansion logic for magma is handled below in LAVA EXPANSION section
         }
 
         // Lava source blocks can rarely solidify edges, but can also EXPAND
@@ -705,13 +1025,6 @@ public class BlockTransformations {
             }
             if (lavaCount == 1 && neighbors.random.nextFloat() < 0.12f) {
                 return Blocks.LAVA.getDefaultState();
-            }
-        }
-
-        // Netherrack near lots of lava becomes magma (prepares for lava expansion)
-        if (block == Blocks.NETHERRACK) {
-            if (neighbors.getLavaCount() >= 2 && neighbors.random.nextFloat() < 0.2f) {
-                return Blocks.MAGMA_BLOCK.getDefaultState();
             }
         }
 
@@ -811,7 +1124,7 @@ public class BlockTransformations {
     /**
      * Check if a block is a nether block (already corrupted).
      */
-    private static boolean isNetherBlock(Block block) {
+    public static boolean isNetherBlock(Block block) {
         return block == Blocks.NETHERRACK ||
                 block == Blocks.SOUL_SAND ||
                 block == Blocks.SOUL_SOIL ||
@@ -831,8 +1144,12 @@ public class BlockTransformations {
                 block == Blocks.WARPED_WART_BLOCK ||
                 block == Blocks.CRIMSON_STEM ||
                 block == Blocks.WARPED_STEM ||
+                block == Blocks.STRIPPED_CRIMSON_STEM ||
+                block == Blocks.STRIPPED_WARPED_STEM ||
                 block == Blocks.CRIMSON_HYPHAE ||
                 block == Blocks.WARPED_HYPHAE ||
+                block == Blocks.STRIPPED_CRIMSON_HYPHAE ||
+                block == Blocks.STRIPPED_WARPED_HYPHAE ||
                 block == Blocks.CRIMSON_PLANKS ||
                 block == Blocks.WARPED_PLANKS ||
                 block == Blocks.CRIMSON_NYLIUM ||
@@ -852,12 +1169,64 @@ public class BlockTransformations {
                 block == Blocks.NETHER_GOLD_ORE ||
                 block == Blocks.NETHER_QUARTZ_ORE ||
                 block == Blocks.ANCIENT_DEBRIS ||
+                block == Blocks.BONE_BLOCK ||
                 block == Blocks.LAVA ||
                 block == Blocks.NETHER_PORTAL ||
                 block == Blocks.SOUL_TORCH ||
                 block == Blocks.SOUL_WALL_TORCH ||
                 block == Blocks.SOUL_LANTERN ||
                 block == Blocks.SOUL_CAMPFIRE ||
-                block == Blocks.SOUL_FIRE;
+                block == Blocks.SOUL_FIRE ||
+                // Slabs
+                block == Blocks.CRIMSON_SLAB ||
+                block == Blocks.WARPED_SLAB ||
+                block == Blocks.BLACKSTONE_SLAB ||
+                block == Blocks.POLISHED_BLACKSTONE_SLAB ||
+                block == Blocks.POLISHED_BLACKSTONE_BRICK_SLAB ||
+                block == Blocks.NETHER_BRICK_SLAB ||
+                block == Blocks.RED_NETHER_BRICK_SLAB ||
+                // Stairs
+                block == Blocks.CRIMSON_STAIRS ||
+                block == Blocks.WARPED_STAIRS ||
+                block == Blocks.BLACKSTONE_STAIRS ||
+                block == Blocks.POLISHED_BLACKSTONE_STAIRS ||
+                block == Blocks.POLISHED_BLACKSTONE_BRICK_STAIRS ||
+                block == Blocks.NETHER_BRICK_STAIRS ||
+                block == Blocks.RED_NETHER_BRICK_STAIRS ||
+                // Walls
+                block == Blocks.BLACKSTONE_WALL ||
+                block == Blocks.POLISHED_BLACKSTONE_WALL ||
+                block == Blocks.POLISHED_BLACKSTONE_BRICK_WALL ||
+                block == Blocks.NETHER_BRICK_WALL ||
+                block == Blocks.RED_NETHER_BRICK_WALL ||
+                // Fences
+                block == Blocks.CRIMSON_FENCE ||
+                block == Blocks.WARPED_FENCE ||
+                block == Blocks.NETHER_BRICK_FENCE ||
+                // Fence gates
+                block == Blocks.CRIMSON_FENCE_GATE ||
+                block == Blocks.WARPED_FENCE_GATE ||
+                // Doors
+                block == Blocks.CRIMSON_DOOR ||
+                block == Blocks.WARPED_DOOR ||
+                // Trapdoors
+                block == Blocks.CRIMSON_TRAPDOOR ||
+                block == Blocks.WARPED_TRAPDOOR ||
+                // Buttons
+                block == Blocks.CRIMSON_BUTTON ||
+                block == Blocks.WARPED_BUTTON ||
+                block == Blocks.POLISHED_BLACKSTONE_BUTTON ||
+                // Pressure plates
+                block == Blocks.CRIMSON_PRESSURE_PLATE ||
+                block == Blocks.WARPED_PRESSURE_PLATE ||
+                block == Blocks.POLISHED_BLACKSTONE_PRESSURE_PLATE ||
+                // Signs
+                block == Blocks.CRIMSON_SIGN ||
+                block == Blocks.CRIMSON_WALL_SIGN ||
+                block == Blocks.WARPED_SIGN ||
+                block == Blocks.WARPED_WALL_SIGN ||
+                // Non-nether blocks that are transformation outputs
+                block == Blocks.TINTED_GLASS ||
+                block == Blocks.IRON_BARS;
     }
 }

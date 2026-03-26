@@ -15,17 +15,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Set;
 
-/**
- * Festering Portal - A Fabric mod that makes nether portals with crying obsidian
- * spread nether corruption to the surrounding overworld.
- *
- * Features:
- * - Portals can be built with crying obsidian in the frame
- * - Each crying obsidian adds 64 blocks to the max corruption radius
- * - Corruption spreads organically, one block at a time (like grass spreading)
- * - Natural blocks transform into their nether equivalents
- * - Water transforms into lava for dramatic effect
- */
 public class FesteringPortal implements ModInitializer {
 
     public static final String MOD_ID = "festeringportal";
@@ -33,15 +22,12 @@ public class FesteringPortal implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        // Load configuration
         FesteringConfig.load();
 
-        // Register server lifecycle events
         ServerLifecycleEvents.SERVER_STARTED.register(server -> {
             FesteringPortalState.initialize(server);
         });
 
-        // Register world tick event for corruption spreading
         ServerTickEvents.END_WORLD_TICK.register(world -> {
             if (world instanceof ServerWorld serverWorld) {
                 CorruptionManager.tick(serverWorld);
@@ -53,46 +39,57 @@ public class FesteringPortal implements ModInitializer {
 
     /**
      * Called by the mixin when a festering portal (with crying obsidian) is created.
-     *
-     * @param world The server world
-     * @param portalPos A position inside or near the portal
-     * @param cryingObsidianCount Number of crying obsidian blocks in the frame
      */
     public static void onFesteringPortalCreated(ServerWorld world, BlockPos portalPos, int cryingObsidianCount) {
-
-        // Calculate the portal center
         BlockPos center = PortalScanner.calculatePortalCenter(world, portalPos);
-
-        // Get or create the state
         FesteringPortalState state = FesteringPortalState.getServerState(world.getServer());
 
-        // Check if this portal is already registered (nearby existing portal)
         if (isNearExistingPortal(state, center, 5)) {
             LOGGER.debug("Portal at {} is near an existing festering portal, skipping registration", center);
             return;
         }
 
-        // Register the new festering portal
         state.registerPortal(center, cryingObsidianCount);
 
-        int maxRadius = cryingObsidianCount * FesteringConfig.RADIUS_PER_CRYING_OBSIDIAN;
-
-        // Initialize the corruption frontier
         FesteringPortalState.FesteringPortalData portal = state.getPortal(center);
         if (portal != null) {
-            Set<BlockPos> frontier = SpreadingAlgorithm.initializeFrontier(world, center, maxRadius);
+            Set<BlockPos> frontier = SpreadingAlgorithm.initializeFrontier(world, center, portal.maxRadius);
             state.updateFrontier(center, frontier, world.getTime());
         }
-        LOGGER.info("Festering portal activated! Max radius: {} blocks", maxRadius);
+        LOGGER.info("Festering portal activated at {}! Max radius: {} blocks",
+            center, cryingObsidianCount * FesteringConfig.RADIUS_PER_CRYING_OBSIDIAN);
     }
 
     /**
-     * Check if a position is near an existing festering portal.
+     * Called by the mixin when an entity arrives through a portal near a festering portal.
      */
-    private static boolean isNearExistingPortal(FesteringPortalState state, BlockPos center, int radius) {
+    public static void onEntityPortalArrival(ServerWorld world, BlockPos entityPos) {
+        FesteringPortalState state = FesteringPortalState.getServerState(world.getServer());
+
         for (FesteringPortalState.FesteringPortalData portal : state.getPortals()) {
-            double distance = Math.sqrt(portal.center.getSquaredDistance(center));
-            if (distance <= radius) {
+            double distSq = portal.center.getSquaredDistance(entityPos);
+
+            if (distSq <= 100) {
+                long currentTick = world.getTime();
+                if (currentTick - portal.lastBurstTick < 100) {
+                    break;
+                }
+                portal.lastBurstTick = currentTick;
+
+                int burstSize = portal.cryingObsidianCount * 5;
+                SpreadingAlgorithm.burstSpread(world, portal, state, burstSize);
+
+                LOGGER.debug("Entity triggered corruption burst at {} (burst size: {})",
+                    portal.center, burstSize);
+                break;
+            }
+        }
+    }
+
+    private static boolean isNearExistingPortal(FesteringPortalState state, BlockPos center, int radius) {
+        double radiusSq = (double) radius * radius;
+        for (FesteringPortalState.FesteringPortalData portal : state.getPortals()) {
+            if (portal.center.getSquaredDistance(center) <= radiusSq) {
                 return true;
             }
         }
