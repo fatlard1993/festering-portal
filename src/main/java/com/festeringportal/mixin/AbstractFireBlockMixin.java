@@ -4,15 +4,6 @@ import com.festeringportal.FesteringPortal;
 import com.festeringportal.util.PortalScanner;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
-import net.minecraft.block.AbstractFireBlock;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-import net.minecraft.world.WorldAccess;
-import net.minecraft.world.dimension.NetherPortal;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -20,28 +11,36 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import java.util.Optional;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.BaseFireBlock;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.portal.PortalShape;
 
 /**
  * Mixin to:
  * 1. Allow crying obsidian to trigger portal lighting (shouldLightPortalAt check)
  * 2. Detect when a portal is created to check for crying obsidian frame blocks
  */
-@Mixin(AbstractFireBlock.class)
+@Mixin(BaseFireBlock.class)
 public class AbstractFireBlockMixin {
 
     /**
      * Wrap the obsidian check in shouldLightPortalAt to also accept crying obsidian.
      */
     @WrapOperation(
-        method = "shouldLightPortalAt",
+        method = "isPortal",
         at = @At(
             value = "INVOKE",
-            target = "Lnet/minecraft/block/BlockState;isOf(Lnet/minecraft/block/Block;)Z",
+            target = "Lnet/minecraft/world/level/block/state/BlockState;is(Ljava/lang/Object;)Z",
             ordinal = 0
         )
     )
-    private static boolean wrapShouldLightObsidianCheck(BlockState state, Block block, Operation<Boolean> original) {
-        return original.call(state, block) || state.isOf(Blocks.CRYING_OBSIDIAN);
+    private static boolean wrapShouldLightObsidianCheck(BlockState state, Object block, Operation<Boolean> original) {
+        return original.call(state, block) || state.is(Blocks.CRYING_OBSIDIAN);
     }
 
     /**
@@ -49,28 +48,28 @@ public class AbstractFireBlockMixin {
      * If it does, register it as a festering portal.
      */
     @Inject(
-        method = "onBlockAdded",
+        method = "onPlace",
         at = @At(
             value = "INVOKE",
-            target = "Lnet/minecraft/world/dimension/NetherPortal;createPortal(Lnet/minecraft/world/WorldAccess;)V",
+            target = "Lnet/minecraft/world/level/portal/PortalShape;createPortalBlocks(Lnet/minecraft/world/level/LevelAccessor;)V",
             shift = At.Shift.AFTER
         ),
         locals = LocalCapture.CAPTURE_FAILHARD
     )
     private void onPortalCreated(
             BlockState state,
-            World world,
+            Level world,
             BlockPos pos,
             BlockState oldState,
             boolean notify,
             CallbackInfo ci,
-            Optional<NetherPortal> optional) {
+            Optional<PortalShape> optional) {
 
-        if (!(world instanceof ServerWorld serverWorld)) {
+        if (!(world instanceof ServerLevel serverWorld)) {
             return;
         }
 
-        if (serverWorld.getRegistryKey() != World.OVERWORLD) {
+        if (serverWorld.dimension() != Level.OVERWORLD) {
             return;
         }
 

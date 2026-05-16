@@ -1,9 +1,9 @@
 package com.festeringportal.corruption;
 
-import net.minecraft.block.*;
-import net.minecraft.block.enums.SlabType;
-import net.minecraft.state.property.Properties;
-
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -636,9 +636,9 @@ public class BlockTransformations {
      */
     private static void registerLogTransformation(Block from, Block to) {
         STATE_TRANSFORMATIONS.put(from, state -> {
-            BlockState newState = to.getDefaultState();
-            if (state.contains(Properties.AXIS) && newState.contains(Properties.AXIS)) {
-                newState = newState.with(Properties.AXIS, state.get(Properties.AXIS));
+            BlockState newState = to.defaultBlockState();
+            if (state.hasProperty(BlockStateProperties.AXIS) && newState.hasProperty(BlockStateProperties.AXIS)) {
+                newState = newState.setValue(BlockStateProperties.AXIS, state.getValue(BlockStateProperties.AXIS));
             }
             return newState;
         });
@@ -649,14 +649,14 @@ public class BlockTransformations {
      */
     private static void registerSlabTransformation(Block from, Block to) {
         STATE_TRANSFORMATIONS.put(from, state -> {
-            BlockState newState = to.getDefaultState();
+            BlockState newState = to.defaultBlockState();
             // Preserve slab type (top, bottom, double)
-            if (state.contains(Properties.SLAB_TYPE) && newState.contains(Properties.SLAB_TYPE)) {
-                newState = newState.with(Properties.SLAB_TYPE, state.get(Properties.SLAB_TYPE));
+            if (state.hasProperty(BlockStateProperties.SLAB_TYPE) && newState.hasProperty(BlockStateProperties.SLAB_TYPE)) {
+                newState = newState.setValue(BlockStateProperties.SLAB_TYPE, state.getValue(BlockStateProperties.SLAB_TYPE));
             }
             // Preserve waterlogged state
-            if (state.contains(Properties.WATERLOGGED) && newState.contains(Properties.WATERLOGGED)) {
-                newState = newState.with(Properties.WATERLOGGED, state.get(Properties.WATERLOGGED));
+            if (state.hasProperty(BlockStateProperties.WATERLOGGED) && newState.hasProperty(BlockStateProperties.WATERLOGGED)) {
+                newState = newState.setValue(BlockStateProperties.WATERLOGGED, state.getValue(BlockStateProperties.WATERLOGGED));
             }
             return newState;
         });
@@ -667,22 +667,22 @@ public class BlockTransformations {
      */
     private static void registerStairTransformation(Block from, Block to) {
         STATE_TRANSFORMATIONS.put(from, state -> {
-            BlockState newState = to.getDefaultState();
+            BlockState newState = to.defaultBlockState();
             // Preserve facing direction
-            if (state.contains(Properties.HORIZONTAL_FACING) && newState.contains(Properties.HORIZONTAL_FACING)) {
-                newState = newState.with(Properties.HORIZONTAL_FACING, state.get(Properties.HORIZONTAL_FACING));
+            if (state.hasProperty(BlockStateProperties.HORIZONTAL_FACING) && newState.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) {
+                newState = newState.setValue(BlockStateProperties.HORIZONTAL_FACING, state.getValue(BlockStateProperties.HORIZONTAL_FACING));
             }
             // Preserve half (top/bottom)
-            if (state.contains(Properties.BLOCK_HALF) && newState.contains(Properties.BLOCK_HALF)) {
-                newState = newState.with(Properties.BLOCK_HALF, state.get(Properties.BLOCK_HALF));
+            if (state.hasProperty(BlockStateProperties.HALF) && newState.hasProperty(BlockStateProperties.HALF)) {
+                newState = newState.setValue(BlockStateProperties.HALF, state.getValue(BlockStateProperties.HALF));
             }
             // Preserve stair shape (straight, inner_left, inner_right, outer_left, outer_right)
-            if (state.contains(Properties.STAIR_SHAPE) && newState.contains(Properties.STAIR_SHAPE)) {
-                newState = newState.with(Properties.STAIR_SHAPE, state.get(Properties.STAIR_SHAPE));
+            if (state.hasProperty(BlockStateProperties.STAIRS_SHAPE) && newState.hasProperty(BlockStateProperties.STAIRS_SHAPE)) {
+                newState = newState.setValue(BlockStateProperties.STAIRS_SHAPE, state.getValue(BlockStateProperties.STAIRS_SHAPE));
             }
             // Preserve waterlogged state
-            if (state.contains(Properties.WATERLOGGED) && newState.contains(Properties.WATERLOGGED)) {
-                newState = newState.with(Properties.WATERLOGGED, state.get(Properties.WATERLOGGED));
+            if (state.hasProperty(BlockStateProperties.WATERLOGGED) && newState.hasProperty(BlockStateProperties.WATERLOGGED)) {
+                newState = newState.setValue(BlockStateProperties.WATERLOGGED, state.getValue(BlockStateProperties.WATERLOGGED));
             }
             return newState;
         });
@@ -694,21 +694,21 @@ public class BlockTransformations {
      */
     private static void registerDoorTransformation(Block from, Block to) {
         STATE_TRANSFORMATIONS.put(from, state -> {
-            BlockState newState = to.getDefaultState();
-            if (state.contains(Properties.HORIZONTAL_FACING) && newState.contains(Properties.HORIZONTAL_FACING)) {
-                newState = newState.with(Properties.HORIZONTAL_FACING, state.get(Properties.HORIZONTAL_FACING));
+            BlockState newState = to.defaultBlockState();
+            if (state.hasProperty(BlockStateProperties.HORIZONTAL_FACING) && newState.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) {
+                newState = newState.setValue(BlockStateProperties.HORIZONTAL_FACING, state.getValue(BlockStateProperties.HORIZONTAL_FACING));
             }
-            if (state.contains(Properties.DOUBLE_BLOCK_HALF) && newState.contains(Properties.DOUBLE_BLOCK_HALF)) {
-                newState = newState.with(Properties.DOUBLE_BLOCK_HALF, state.get(Properties.DOUBLE_BLOCK_HALF));
+            if (state.hasProperty(BlockStateProperties.DOUBLE_BLOCK_HALF) && newState.hasProperty(BlockStateProperties.DOUBLE_BLOCK_HALF)) {
+                newState = newState.setValue(BlockStateProperties.DOUBLE_BLOCK_HALF, state.getValue(BlockStateProperties.DOUBLE_BLOCK_HALF));
             }
-            if (state.contains(Properties.DOOR_HINGE) && newState.contains(Properties.DOOR_HINGE)) {
-                newState = newState.with(Properties.DOOR_HINGE, state.get(Properties.DOOR_HINGE));
+            if (state.hasProperty(BlockStateProperties.DOOR_HINGE) && newState.hasProperty(BlockStateProperties.DOOR_HINGE)) {
+                newState = newState.setValue(BlockStateProperties.DOOR_HINGE, state.getValue(BlockStateProperties.DOOR_HINGE));
             }
-            if (state.contains(Properties.OPEN) && newState.contains(Properties.OPEN)) {
-                newState = newState.with(Properties.OPEN, state.get(Properties.OPEN));
+            if (state.hasProperty(BlockStateProperties.OPEN) && newState.hasProperty(BlockStateProperties.OPEN)) {
+                newState = newState.setValue(BlockStateProperties.OPEN, state.getValue(BlockStateProperties.OPEN));
             }
-            if (state.contains(Properties.POWERED) && newState.contains(Properties.POWERED)) {
-                newState = newState.with(Properties.POWERED, state.get(Properties.POWERED));
+            if (state.hasProperty(BlockStateProperties.POWERED) && newState.hasProperty(BlockStateProperties.POWERED)) {
+                newState = newState.setValue(BlockStateProperties.POWERED, state.getValue(BlockStateProperties.POWERED));
             }
             return newState;
         });
@@ -720,21 +720,21 @@ public class BlockTransformations {
      */
     private static void registerTrapdoorTransformation(Block from, Block to) {
         STATE_TRANSFORMATIONS.put(from, state -> {
-            BlockState newState = to.getDefaultState();
-            if (state.contains(Properties.HORIZONTAL_FACING) && newState.contains(Properties.HORIZONTAL_FACING)) {
-                newState = newState.with(Properties.HORIZONTAL_FACING, state.get(Properties.HORIZONTAL_FACING));
+            BlockState newState = to.defaultBlockState();
+            if (state.hasProperty(BlockStateProperties.HORIZONTAL_FACING) && newState.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) {
+                newState = newState.setValue(BlockStateProperties.HORIZONTAL_FACING, state.getValue(BlockStateProperties.HORIZONTAL_FACING));
             }
-            if (state.contains(Properties.BLOCK_HALF) && newState.contains(Properties.BLOCK_HALF)) {
-                newState = newState.with(Properties.BLOCK_HALF, state.get(Properties.BLOCK_HALF));
+            if (state.hasProperty(BlockStateProperties.HALF) && newState.hasProperty(BlockStateProperties.HALF)) {
+                newState = newState.setValue(BlockStateProperties.HALF, state.getValue(BlockStateProperties.HALF));
             }
-            if (state.contains(Properties.OPEN) && newState.contains(Properties.OPEN)) {
-                newState = newState.with(Properties.OPEN, state.get(Properties.OPEN));
+            if (state.hasProperty(BlockStateProperties.OPEN) && newState.hasProperty(BlockStateProperties.OPEN)) {
+                newState = newState.setValue(BlockStateProperties.OPEN, state.getValue(BlockStateProperties.OPEN));
             }
-            if (state.contains(Properties.POWERED) && newState.contains(Properties.POWERED)) {
-                newState = newState.with(Properties.POWERED, state.get(Properties.POWERED));
+            if (state.hasProperty(BlockStateProperties.POWERED) && newState.hasProperty(BlockStateProperties.POWERED)) {
+                newState = newState.setValue(BlockStateProperties.POWERED, state.getValue(BlockStateProperties.POWERED));
             }
-            if (state.contains(Properties.WATERLOGGED) && newState.contains(Properties.WATERLOGGED)) {
-                newState = newState.with(Properties.WATERLOGGED, state.get(Properties.WATERLOGGED));
+            if (state.hasProperty(BlockStateProperties.WATERLOGGED) && newState.hasProperty(BlockStateProperties.WATERLOGGED)) {
+                newState = newState.setValue(BlockStateProperties.WATERLOGGED, state.getValue(BlockStateProperties.WATERLOGGED));
             }
             return newState;
         });
@@ -746,18 +746,18 @@ public class BlockTransformations {
      */
     private static void registerFenceGateTransformation(Block from, Block to) {
         STATE_TRANSFORMATIONS.put(from, state -> {
-            BlockState newState = to.getDefaultState();
-            if (state.contains(Properties.HORIZONTAL_FACING) && newState.contains(Properties.HORIZONTAL_FACING)) {
-                newState = newState.with(Properties.HORIZONTAL_FACING, state.get(Properties.HORIZONTAL_FACING));
+            BlockState newState = to.defaultBlockState();
+            if (state.hasProperty(BlockStateProperties.HORIZONTAL_FACING) && newState.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) {
+                newState = newState.setValue(BlockStateProperties.HORIZONTAL_FACING, state.getValue(BlockStateProperties.HORIZONTAL_FACING));
             }
-            if (state.contains(Properties.IN_WALL) && newState.contains(Properties.IN_WALL)) {
-                newState = newState.with(Properties.IN_WALL, state.get(Properties.IN_WALL));
+            if (state.hasProperty(BlockStateProperties.IN_WALL) && newState.hasProperty(BlockStateProperties.IN_WALL)) {
+                newState = newState.setValue(BlockStateProperties.IN_WALL, state.getValue(BlockStateProperties.IN_WALL));
             }
-            if (state.contains(Properties.OPEN) && newState.contains(Properties.OPEN)) {
-                newState = newState.with(Properties.OPEN, state.get(Properties.OPEN));
+            if (state.hasProperty(BlockStateProperties.OPEN) && newState.hasProperty(BlockStateProperties.OPEN)) {
+                newState = newState.setValue(BlockStateProperties.OPEN, state.getValue(BlockStateProperties.OPEN));
             }
-            if (state.contains(Properties.POWERED) && newState.contains(Properties.POWERED)) {
-                newState = newState.with(Properties.POWERED, state.get(Properties.POWERED));
+            if (state.hasProperty(BlockStateProperties.POWERED) && newState.hasProperty(BlockStateProperties.POWERED)) {
+                newState = newState.setValue(BlockStateProperties.POWERED, state.getValue(BlockStateProperties.POWERED));
             }
             return newState;
         });
@@ -769,15 +769,15 @@ public class BlockTransformations {
      */
     private static void registerButtonTransformation(Block from, Block to) {
         STATE_TRANSFORMATIONS.put(from, state -> {
-            BlockState newState = to.getDefaultState();
-            if (state.contains(Properties.BLOCK_FACE) && newState.contains(Properties.BLOCK_FACE)) {
-                newState = newState.with(Properties.BLOCK_FACE, state.get(Properties.BLOCK_FACE));
+            BlockState newState = to.defaultBlockState();
+            if (state.hasProperty(BlockStateProperties.ATTACH_FACE) && newState.hasProperty(BlockStateProperties.ATTACH_FACE)) {
+                newState = newState.setValue(BlockStateProperties.ATTACH_FACE, state.getValue(BlockStateProperties.ATTACH_FACE));
             }
-            if (state.contains(Properties.HORIZONTAL_FACING) && newState.contains(Properties.HORIZONTAL_FACING)) {
-                newState = newState.with(Properties.HORIZONTAL_FACING, state.get(Properties.HORIZONTAL_FACING));
+            if (state.hasProperty(BlockStateProperties.HORIZONTAL_FACING) && newState.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) {
+                newState = newState.setValue(BlockStateProperties.HORIZONTAL_FACING, state.getValue(BlockStateProperties.HORIZONTAL_FACING));
             }
-            if (state.contains(Properties.POWERED) && newState.contains(Properties.POWERED)) {
-                newState = newState.with(Properties.POWERED, state.get(Properties.POWERED));
+            if (state.hasProperty(BlockStateProperties.POWERED) && newState.hasProperty(BlockStateProperties.POWERED)) {
+                newState = newState.setValue(BlockStateProperties.POWERED, state.getValue(BlockStateProperties.POWERED));
             }
             return newState;
         });
@@ -809,7 +809,7 @@ public class BlockTransformations {
      * @param random The random source to use for diversity rolls
      * @return The transformed block state, or null if no transformation exists
      */
-    public static BlockState getTransformation(BlockState input, net.minecraft.util.math.random.Random random) {
+    public static BlockState getTransformation(BlockState input, net.minecraft.util.RandomSource random) {
         Block inputBlock = input.getBlock();
 
         // Check state-preserving transformations first
@@ -830,7 +830,7 @@ public class BlockTransformations {
                 outputBlock = getRandomAlternative(outputBlock, random);
             }
 
-            return outputBlock.getDefaultState();
+            return outputBlock.defaultBlockState();
         }
 
         // No transformation available
@@ -841,7 +841,7 @@ public class BlockTransformations {
      * Get a random alternative block for diversity.
      * Returns the original if no alternatives apply.
      */
-    private static Block getRandomAlternative(Block original, net.minecraft.util.math.random.Random random) {
+    private static Block getRandomAlternative(Block original, net.minecraft.util.RandomSource random) {
         // Terrain blocks (grass, dirt, etc -> netherrack/soul soil)
         if (original == Blocks.NETHERRACK || original == Blocks.SOUL_SOIL || original == Blocks.SOUL_SAND) {
             return BASE_NETHER_TERRAIN[random.nextInt(BASE_NETHER_TERRAIN.length)];
@@ -944,51 +944,51 @@ public class BlockTransformations {
             // Graduated lava checks (higher lava count = higher chance)
             int lavaCount = neighbors.getLavaCount();
             if (lavaCount >= 2 && neighbors.random.nextFloat() < 0.25f) {
-                return Blocks.MAGMA_BLOCK.getDefaultState();
+                return Blocks.MAGMA_BLOCK.defaultBlockState();
             }
             if (neighbors.hasLava() && neighbors.random.nextFloat() < 0.15f) {
-                return Blocks.MAGMA_BLOCK.getDefaultState();
+                return Blocks.MAGMA_BLOCK.defaultBlockState();
             }
             // Nylium checks
             if (neighbors.hasCrimsonInfluence() && neighbors.random.nextFloat() < 0.3f) {
-                return Blocks.CRIMSON_NYLIUM.getDefaultState();
+                return Blocks.CRIMSON_NYLIUM.defaultBlockState();
             }
             if (neighbors.hasWarpedInfluence() && neighbors.random.nextFloat() < 0.3f) {
-                return Blocks.WARPED_NYLIUM.getDefaultState();
+                return Blocks.WARPED_NYLIUM.defaultBlockState();
             }
         }
 
         // Soul soil can become soul sand (sinking effect spreads)
         if (block == Blocks.SOUL_SOIL) {
             if (neighbors.hasSoulSand() && neighbors.random.nextFloat() < 0.25f) {
-                return Blocks.SOUL_SAND.getDefaultState();
+                return Blocks.SOUL_SAND.defaultBlockState();
             }
         }
 
         // Basalt can become polished or smooth variants
         if (block == Blocks.BASALT) {
             if (neighbors.hasPolishedStone() && neighbors.random.nextFloat() < 0.2f) {
-                return Blocks.POLISHED_BASALT.getDefaultState();
+                return Blocks.POLISHED_BASALT.defaultBlockState();
             }
             if (neighbors.hasBlackstone() && neighbors.random.nextFloat() < 0.15f) {
-                return Blocks.BLACKSTONE.getDefaultState();
+                return Blocks.BLACKSTONE.defaultBlockState();
             }
         }
 
         // Blackstone can become gilded near gold
         if (block == Blocks.BLACKSTONE) {
             if (neighbors.hasGold() && neighbors.random.nextFloat() < 0.1f) {
-                return Blocks.GILDED_BLACKSTONE.getDefaultState();
+                return Blocks.GILDED_BLACKSTONE.defaultBlockState();
             }
             if (neighbors.hasPolishedStone() && neighbors.random.nextFloat() < 0.2f) {
-                return Blocks.POLISHED_BLACKSTONE.getDefaultState();
+                return Blocks.POLISHED_BLACKSTONE.defaultBlockState();
             }
         }
 
         // Nether wart blocks can spawn shroomlight (rare)
         if (block == Blocks.NETHER_WART_BLOCK || block == Blocks.WARPED_WART_BLOCK) {
             if (neighbors.random.nextFloat() < 0.05f) {
-                return Blocks.SHROOMLIGHT.getDefaultState();
+                return Blocks.SHROOMLIGHT.defaultBlockState();
             }
         }
 
@@ -1003,7 +1003,7 @@ public class BlockTransformations {
         // Magma blocks near water create blackstone crust
         if (block == Blocks.MAGMA_BLOCK) {
             if (neighbors.hasWater() && neighbors.random.nextFloat() < 0.3f) {
-                return Blocks.BLACKSTONE.getDefaultState();
+                return Blocks.BLACKSTONE.defaultBlockState();
             }
         }
 
@@ -1011,7 +1011,7 @@ public class BlockTransformations {
         if (block == Blocks.LAVA) {
             // Lava can cool at edges
             if (neighbors.hasCoolingSurface() && neighbors.random.nextFloat() < 0.05f) {
-                return Blocks.MAGMA_BLOCK.getDefaultState();
+                return Blocks.MAGMA_BLOCK.defaultBlockState();
             }
         }
 
@@ -1021,17 +1021,17 @@ public class BlockTransformations {
             int lavaCount = neighbors.getLavaCount();
             // More lava neighbors = higher chance to melt
             if (lavaCount >= 2 && neighbors.random.nextFloat() < 0.25f) {
-                return Blocks.LAVA.getDefaultState();
+                return Blocks.LAVA.defaultBlockState();
             }
             if (lavaCount == 1 && neighbors.random.nextFloat() < 0.12f) {
-                return Blocks.LAVA.getDefaultState();
+                return Blocks.LAVA.defaultBlockState();
             }
         }
 
         // Blackstone near lava can become magma
         if (block == Blocks.BLACKSTONE || block == Blocks.POLISHED_BLACKSTONE) {
             if (neighbors.getLavaCount() >= 1 && neighbors.random.nextFloat() < 0.1f) {
-                return Blocks.MAGMA_BLOCK.getDefaultState();
+                return Blocks.MAGMA_BLOCK.defaultBlockState();
             }
         }
 
@@ -1042,7 +1042,7 @@ public class BlockTransformations {
      * Context about neighboring blocks for maturation decisions.
      */
     public static class NeighborContext {
-        public final net.minecraft.util.math.random.Random random;
+        public final net.minecraft.util.RandomSource random;
         private boolean crimsonInfluence;
         private boolean warpedInfluence;
         private boolean lava;
@@ -1057,13 +1057,13 @@ public class BlockTransformations {
         private boolean magma;
         private int magmaCount;
 
-        public NeighborContext(net.minecraft.util.math.random.Random random) {
+        public NeighborContext(net.minecraft.util.RandomSource random) {
             this.random = random;
         }
 
-        public void analyze(net.minecraft.world.World world, net.minecraft.util.math.BlockPos pos) {
-            for (net.minecraft.util.math.Direction dir : net.minecraft.util.math.Direction.values()) {
-                BlockState neighbor = world.getBlockState(pos.offset(dir));
+        public void analyze(net.minecraft.world.level.Level world, net.minecraft.core.BlockPos pos) {
+            for (net.minecraft.core.Direction dir : net.minecraft.core.Direction.values()) {
+                BlockState neighbor = world.getBlockState(pos.relative(dir));
                 Block block = neighbor.getBlock();
 
                 if (block == Blocks.CRIMSON_STEM || block == Blocks.CRIMSON_FUNGUS ||
@@ -1096,7 +1096,7 @@ public class BlockTransformations {
                     block == Blocks.GILDED_BLACKSTONE) {
                     gold = true;
                 }
-                if (neighbor.isAir() && dir == net.minecraft.util.math.Direction.UP) {
+                if (neighbor.isAir() && dir == net.minecraft.core.Direction.UP) {
                     airAbove = true;
                 }
                 if (block == Blocks.WATER) water = true;

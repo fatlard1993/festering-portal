@@ -5,21 +5,21 @@ import com.festeringportal.config.FesteringConfig;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.PersistentState;
-import net.minecraft.world.PersistentStateManager;
-import net.minecraft.world.PersistentStateType;
-import net.minecraft.world.World;
-
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.saveddata.SavedData;
+import net.minecraft.world.level.saveddata.SavedDataType;
+import net.minecraft.world.level.storage.SavedDataStorage;
+import net.minecraft.resources.Identifier;
 import java.util.*;
 
 /**
  * Persistent state storage for festering portals.
  * Saves portal locations and corruption frontier across world restarts.
  */
-public class FesteringPortalState extends PersistentState {
+public class FesteringPortalState extends SavedData {
 
     private static final String STATE_ID = FesteringPortal.MOD_ID + "_portals";
     public static final int MAX_FRONTIER_SIZE = 5000;
@@ -84,7 +84,7 @@ public class FesteringPortalState extends PersistentState {
          * Check if a position is within the max spread radius.
          */
         public boolean isWithinMaxRadius(BlockPos pos) {
-            double distSq = center.getSquaredDistance(pos);
+            double distSq = center.distSqr(pos);
             return distSq <= (double) maxRadius * maxRadius;
         }
     }
@@ -116,8 +116,8 @@ public class FesteringPortalState extends PersistentState {
         ).apply(instance, FesteringPortalState::new)
     );
 
-    private static final PersistentStateType<FesteringPortalState> TYPE = new PersistentStateType<>(
-        STATE_ID,
+    private static final SavedDataType<FesteringPortalState> TYPE = new SavedDataType<>(
+        Identifier.fromNamespaceAndPath(FesteringPortal.MOD_ID, "portals"),
         FesteringPortalState::new,
         CODEC,
         null
@@ -128,7 +128,7 @@ public class FesteringPortalState extends PersistentState {
      */
     public void registerPortal(BlockPos center, int cryingObsidianCount) {
         festeringPortals.put(center, new FesteringPortalData(center, cryingObsidianCount));
-        markDirty();
+        setDirty();
     }
 
     /**
@@ -136,7 +136,7 @@ public class FesteringPortalState extends PersistentState {
      */
     public void removePortal(BlockPos center) {
         if (festeringPortals.remove(center) != null) {
-            markDirty();
+            setDirty();
         }
     }
 
@@ -181,7 +181,7 @@ public class FesteringPortalState extends PersistentState {
                 }
             }
             data.lastSpreadTick = tick;
-            markDirty();
+            setDirty();
         }
     }
 
@@ -189,12 +189,12 @@ public class FesteringPortalState extends PersistentState {
      * Get or create the state for the server's overworld.
      */
     public static FesteringPortalState getServerState(MinecraftServer server) {
-        ServerWorld world = server.getWorld(World.OVERWORLD);
+        ServerLevel world = server.getLevel(Level.OVERWORLD);
         if (world == null) {
             throw new IllegalStateException("Overworld not found!");
         }
-        PersistentStateManager manager = world.getPersistentStateManager();
-        return manager.getOrCreate(TYPE);
+        SavedDataStorage manager = world.getDataStorage();
+        return manager.computeIfAbsent(TYPE);
     }
 
     /**

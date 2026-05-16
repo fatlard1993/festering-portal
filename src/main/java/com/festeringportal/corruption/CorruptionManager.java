@@ -3,14 +3,13 @@ package com.festeringportal.corruption;
 import com.festeringportal.FesteringPortal;
 import com.festeringportal.config.FesteringConfig;
 import com.festeringportal.data.FesteringPortalState;
-import net.minecraft.block.Blocks;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
 
 /**
  * Manages the tick-based corruption spreading from festering portals.
@@ -24,8 +23,8 @@ public class CorruptionManager {
     /**
      * Called every world tick to process corruption spreading.
      */
-    public static void tick(ServerWorld world) {
-        if (world.getRegistryKey() != World.OVERWORLD) {
+    public static void tick(ServerLevel world) {
+        if (world.dimension() != Level.OVERWORLD) {
             return;
         }
 
@@ -43,7 +42,7 @@ public class CorruptionManager {
         }
 
         List<BlockPos> portalsToRemove = new ArrayList<>();
-        long currentTick = world.getTime();
+        long currentTick = world.getGameTime();
 
         // Enforce MAX_PORTALS_PER_TICK with rotation for fairness
         int maxToProcess = Math.min(portals.size(), FesteringConfig.MAX_PORTALS_PER_TICK);
@@ -63,7 +62,7 @@ public class CorruptionManager {
                 continue;
             }
 
-            if (!world.isChunkLoaded(portal.center)) {
+            if (!world.hasChunkAt(portal.center)) {
                 continue;
             }
 
@@ -83,12 +82,12 @@ public class CorruptionManager {
     /**
      * Check if a portal is still valid (has portal blocks).
      */
-    private static boolean isPortalStillValid(ServerWorld world, BlockPos center) {
+    private static boolean isPortalStillValid(ServerLevel world, BlockPos center) {
         for (int dx = -2; dx <= 2; dx++) {
             for (int dy = -2; dy <= 2; dy++) {
                 for (int dz = -2; dz <= 2; dz++) {
-                    BlockPos checkPos = center.add(dx, dy, dz);
-                    if (world.getBlockState(checkPos).isOf(Blocks.NETHER_PORTAL)) {
+                    BlockPos checkPos = center.offset(dx, dy, dz);
+                    if (world.getBlockState(checkPos).is(Blocks.NETHER_PORTAL)) {
                         return true;
                     }
                 }

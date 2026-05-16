@@ -1,7 +1,7 @@
 {
     "schemaVersion": 1,
     "id": "festeringportal",
-    "version": "${version}",
+    "version": "1.1.1",
     "name": "Festering Portal",
     "description": "Build nether portals with Crying Obsidian to spread nether corruption into the overworld. Grass becomes netherrack, water turns to lava, and mobs transform into their nether counterparts. The corruption radius scales with the amount of crying obsidian in the frame.",
     "authors": [

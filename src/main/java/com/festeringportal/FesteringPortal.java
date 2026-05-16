@@ -8,8 +8,8 @@ import com.festeringportal.util.PortalScanner;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,8 +28,8 @@ public class FesteringPortal implements ModInitializer {
             FesteringPortalState.initialize(server);
         });
 
-        ServerTickEvents.END_WORLD_TICK.register(world -> {
-            if (world instanceof ServerWorld serverWorld) {
+        ServerTickEvents.END_LEVEL_TICK.register(world -> {
+            if (world instanceof ServerLevel serverWorld) {
                 CorruptionManager.tick(serverWorld);
             }
         });
@@ -40,7 +40,7 @@ public class FesteringPortal implements ModInitializer {
     /**
      * Called by the mixin when a festering portal (with crying obsidian) is created.
      */
-    public static void onFesteringPortalCreated(ServerWorld world, BlockPos portalPos, int cryingObsidianCount) {
+    public static void onFesteringPortalCreated(ServerLevel world, BlockPos portalPos, int cryingObsidianCount) {
         BlockPos center = PortalScanner.calculatePortalCenter(world, portalPos);
         FesteringPortalState state = FesteringPortalState.getServerState(world.getServer());
 
@@ -54,7 +54,7 @@ public class FesteringPortal implements ModInitializer {
         FesteringPortalState.FesteringPortalData portal = state.getPortal(center);
         if (portal != null) {
             Set<BlockPos> frontier = SpreadingAlgorithm.initializeFrontier(world, center, portal.maxRadius);
-            state.updateFrontier(center, frontier, world.getTime());
+            state.updateFrontier(center, frontier, world.getGameTime());
         }
         LOGGER.info("Festering portal activated at {}! Max radius: {} blocks",
             center, cryingObsidianCount * FesteringConfig.RADIUS_PER_CRYING_OBSIDIAN);
@@ -63,14 +63,14 @@ public class FesteringPortal implements ModInitializer {
     /**
      * Called by the mixin when an entity arrives through a portal near a festering portal.
      */
-    public static void onEntityPortalArrival(ServerWorld world, BlockPos entityPos) {
+    public static void onEntityPortalArrival(ServerLevel world, BlockPos entityPos) {
         FesteringPortalState state = FesteringPortalState.getServerState(world.getServer());
 
         for (FesteringPortalState.FesteringPortalData portal : state.getPortals()) {
-            double distSq = portal.center.getSquaredDistance(entityPos);
+            double distSq = portal.center.distSqr(entityPos);
 
             if (distSq <= 100) {
-                long currentTick = world.getTime();
+                long currentTick = world.getGameTime();
                 if (currentTick - portal.lastBurstTick < 100) {
                     break;
                 }
@@ -89,7 +89,7 @@ public class FesteringPortal implements ModInitializer {
     private static boolean isNearExistingPortal(FesteringPortalState state, BlockPos center, int radius) {
         double radiusSq = (double) radius * radius;
         for (FesteringPortalState.FesteringPortalData portal : state.getPortals()) {
-            if (portal.center.getSquaredDistance(center) <= radiusSq) {
+            if (portal.center.distSqr(center) <= radiusSq) {
                 return true;
             }
         }

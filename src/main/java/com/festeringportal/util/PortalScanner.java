@@ -1,13 +1,12 @@
 package com.festeringportal.util;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-
 import java.util.HashSet;
 import java.util.Set;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 
 /**
  * Utility class for scanning portal frames to detect crying obsidian blocks.
@@ -27,12 +26,12 @@ public class PortalScanner {
      * @param firePos The position where fire was placed (inside the portal)
      * @return The number of crying obsidian blocks in the frame
      */
-    public static int countCryingObsidianInFrame(ServerWorld world, BlockPos firePos) {
+    public static int countCryingObsidianInFrame(ServerLevel world, BlockPos firePos) {
         Set<BlockPos> frameBlocks = findFrameBlocks(world, firePos);
         int count = 0;
         for (BlockPos pos : frameBlocks) {
             BlockState state = world.getBlockState(pos);
-            if (state.isOf(Blocks.CRYING_OBSIDIAN)) {
+            if (state.is(Blocks.CRYING_OBSIDIAN)) {
                 count++;
             }
         }
@@ -46,7 +45,7 @@ public class PortalScanner {
      * @param portalPos A position inside or near the portal
      * @return Set of all frame block positions
      */
-    public static Set<BlockPos> findFrameBlocks(ServerWorld world, BlockPos portalPos) {
+    public static Set<BlockPos> findFrameBlocks(ServerLevel world, BlockPos portalPos) {
         Set<BlockPos> frameBlocks = new HashSet<>();
 
         // Try both portal orientations (X and Z axis)
@@ -63,7 +62,7 @@ public class PortalScanner {
     /**
      * Find frame blocks for a specific portal axis orientation.
      */
-    private static Set<BlockPos> findFrameBlocksForAxis(ServerWorld world, BlockPos startPos, Direction.Axis axis) {
+    private static Set<BlockPos> findFrameBlocksForAxis(ServerLevel world, BlockPos startPos, Direction.Axis axis) {
         Set<BlockPos> frameBlocks = new HashSet<>();
 
         // Determine the horizontal direction based on axis
@@ -92,22 +91,22 @@ public class PortalScanner {
         // Collect frame blocks
         // Bottom frame (below portal)
         for (int i = -1; i <= width; i++) {
-            frameBlocks.add(lowerCorner.offset(widthDir, i).down());
+            frameBlocks.add(lowerCorner.relative(widthDir, i).below());
         }
 
         // Top frame (above portal)
         for (int i = -1; i <= width; i++) {
-            frameBlocks.add(lowerCorner.offset(widthDir, i).up(height));
+            frameBlocks.add(lowerCorner.relative(widthDir, i).above(height));
         }
 
         // Left frame
         for (int j = 0; j < height; j++) {
-            frameBlocks.add(lowerCorner.offset(widthDir, -1).up(j));
+            frameBlocks.add(lowerCorner.relative(widthDir, -1).above(j));
         }
 
         // Right frame
         for (int j = 0; j < height; j++) {
-            frameBlocks.add(lowerCorner.offset(widthDir, width).up(j));
+            frameBlocks.add(lowerCorner.relative(widthDir, width).above(j));
         }
 
         return frameBlocks;
@@ -116,9 +115,9 @@ public class PortalScanner {
     /**
      * Find a portal block near the start position.
      */
-    private static BlockPos findPortalInterior(ServerWorld world, BlockPos startPos) {
+    private static BlockPos findPortalInterior(ServerLevel world, BlockPos startPos) {
         // Check if start pos is already a portal block
-        if (world.getBlockState(startPos).isOf(Blocks.NETHER_PORTAL)) {
+        if (world.getBlockState(startPos).is(Blocks.NETHER_PORTAL)) {
             return startPos;
         }
 
@@ -126,8 +125,8 @@ public class PortalScanner {
         for (int dx = -SEARCH_RADIUS; dx <= SEARCH_RADIUS; dx++) {
             for (int dy = -SEARCH_RADIUS; dy <= SEARCH_RADIUS; dy++) {
                 for (int dz = -SEARCH_RADIUS; dz <= SEARCH_RADIUS; dz++) {
-                    BlockPos checkPos = startPos.add(dx, dy, dz);
-                    if (world.getBlockState(checkPos).isOf(Blocks.NETHER_PORTAL)) {
+                    BlockPos checkPos = startPos.offset(dx, dy, dz);
+                    if (world.getBlockState(checkPos).is(Blocks.NETHER_PORTAL)) {
                         return checkPos;
                     }
                 }
@@ -139,18 +138,18 @@ public class PortalScanner {
     /**
      * Find the lower-left corner of the portal interior.
      */
-    private static BlockPos findLowerCorner(ServerWorld world, BlockPos portalPos, Direction widthDir) {
+    private static BlockPos findLowerCorner(ServerLevel world, BlockPos portalPos, Direction widthDir) {
         BlockPos corner = portalPos;
 
         // Move down to find the bottom
-        while (world.getBlockState(corner.down()).isOf(Blocks.NETHER_PORTAL)) {
-            corner = corner.down();
+        while (world.getBlockState(corner.below()).is(Blocks.NETHER_PORTAL)) {
+            corner = corner.below();
         }
 
         // Move in negative width direction to find left edge
         Direction negativeDir = widthDir.getOpposite();
-        while (world.getBlockState(corner.offset(negativeDir)).isOf(Blocks.NETHER_PORTAL)) {
-            corner = corner.offset(negativeDir);
+        while (world.getBlockState(corner.relative(negativeDir)).is(Blocks.NETHER_PORTAL)) {
+            corner = corner.relative(negativeDir);
         }
 
         return corner;
@@ -159,13 +158,13 @@ public class PortalScanner {
     /**
      * Measure the width of the portal (number of portal blocks horizontally).
      */
-    private static int measureWidth(ServerWorld world, BlockPos lowerCorner, Direction widthDir) {
+    private static int measureWidth(ServerLevel world, BlockPos lowerCorner, Direction widthDir) {
         int width = 0;
         BlockPos checkPos = lowerCorner;
 
-        while (width < MAX_PORTAL_WIDTH && world.getBlockState(checkPos).isOf(Blocks.NETHER_PORTAL)) {
+        while (width < MAX_PORTAL_WIDTH && world.getBlockState(checkPos).is(Blocks.NETHER_PORTAL)) {
             width++;
-            checkPos = checkPos.offset(widthDir);
+            checkPos = checkPos.relative(widthDir);
         }
 
         return width;
@@ -174,13 +173,13 @@ public class PortalScanner {
     /**
      * Measure the height of the portal (number of portal blocks vertically).
      */
-    private static int measureHeight(ServerWorld world, BlockPos lowerCorner) {
+    private static int measureHeight(ServerLevel world, BlockPos lowerCorner) {
         int height = 0;
         BlockPos checkPos = lowerCorner;
 
-        while (height < MAX_PORTAL_HEIGHT && world.getBlockState(checkPos).isOf(Blocks.NETHER_PORTAL)) {
+        while (height < MAX_PORTAL_HEIGHT && world.getBlockState(checkPos).is(Blocks.NETHER_PORTAL)) {
             height++;
-            checkPos = checkPos.up();
+            checkPos = checkPos.above();
         }
 
         return height;
@@ -190,7 +189,7 @@ public class PortalScanner {
      * Calculate the center position of a portal.
      * Measures both axes and picks the wider one to correctly detect portal orientation.
      */
-    public static BlockPos calculatePortalCenter(ServerWorld world, BlockPos portalPos) {
+    public static BlockPos calculatePortalCenter(ServerLevel world, BlockPos portalPos) {
         BlockPos interior = findPortalInterior(world, portalPos);
         if (interior == null) {
             return portalPos;
@@ -225,8 +224,8 @@ public class PortalScanner {
 
         // Apply width offset along the correct axis
         if (widthDir == Direction.SOUTH) {
-            return lowerCorner.add(0, height / 2, width / 2);
+            return lowerCorner.offset(0, height / 2, width / 2);
         }
-        return lowerCorner.add(width / 2, height / 2, 0);
+        return lowerCorner.offset(width / 2, height / 2, 0);
     }
 }
