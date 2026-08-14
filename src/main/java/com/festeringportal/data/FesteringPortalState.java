@@ -36,9 +36,6 @@ public class FesteringPortalState extends SavedData {
         this.festeringPortals = new HashMap<>(portals);
     }
 
-    /**
-     * Data class for a single festering portal.
-     */
     public static class FesteringPortalData {
         public final BlockPos center;
         public final int cryingObsidianCount;
@@ -80,16 +77,12 @@ public class FesteringPortalState extends SavedData {
             return new FesteringPortalData(center, cryingCount, new HashSet<>(frontier), lastTick, lastBurstTick);
         }
 
-        /**
-         * Check if a position is within the max spread radius.
-         */
         public boolean isWithinMaxRadius(BlockPos pos) {
             double distSq = center.distSqr(pos);
             return distSq <= (double) maxRadius * maxRadius;
         }
     }
 
-    // BlockPos string codec with error handling
     private static final Codec<BlockPos> BLOCK_POS_STRING_CODEC = Codec.STRING.comapFlatMap(
         str -> {
             try {
@@ -123,40 +116,25 @@ public class FesteringPortalState extends SavedData {
         null
     );
 
-    /**
-     * Register a new festering portal.
-     */
     public void registerPortal(BlockPos center, int cryingObsidianCount) {
         festeringPortals.put(center, new FesteringPortalData(center, cryingObsidianCount));
         setDirty();
     }
 
-    /**
-     * Remove a festering portal.
-     */
     public void removePortal(BlockPos center) {
         if (festeringPortals.remove(center) != null) {
             setDirty();
         }
     }
 
-    /**
-     * Get all festering portals.
-     */
     public Collection<FesteringPortalData> getPortals() {
         return Collections.unmodifiableCollection(festeringPortals.values());
     }
 
-    /**
-     * Get a specific portal by center position.
-     */
     public FesteringPortalData getPortal(BlockPos center) {
         return festeringPortals.get(center);
     }
 
-    /**
-     * Check if a portal exists at the given center.
-     */
     public boolean hasPortal(BlockPos center) {
         return festeringPortals.containsKey(center);
     }
@@ -171,7 +149,7 @@ public class FesteringPortalState extends SavedData {
                 data.corruptionFrontier.clear();
                 data.corruptionFrontier.addAll(newFrontier);
             }
-            // Enforce frontier size cap by evicting random entries
+            // Enforce frontier size cap by evicting arbitrary entries
             if (data.corruptionFrontier.size() > MAX_FRONTIER_SIZE) {
                 Iterator<BlockPos> it = data.corruptionFrontier.iterator();
                 int toRemove = data.corruptionFrontier.size() - MAX_FRONTIER_SIZE;
@@ -185,9 +163,6 @@ public class FesteringPortalState extends SavedData {
         }
     }
 
-    /**
-     * Get or create the state for the server's overworld.
-     */
     public static FesteringPortalState getServerState(MinecraftServer server) {
         ServerLevel world = server.getLevel(Level.OVERWORLD);
         if (world == null) {
@@ -197,9 +172,6 @@ public class FesteringPortalState extends SavedData {
         return manager.computeIfAbsent(TYPE);
     }
 
-    /**
-     * Initialize the state system.
-     */
     public static void initialize(MinecraftServer server) {
         FesteringPortalState state = getServerState(server);
         if (!state.festeringPortals.isEmpty()) {

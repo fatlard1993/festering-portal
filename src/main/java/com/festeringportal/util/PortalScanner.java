@@ -13,7 +13,6 @@ import net.minecraft.world.level.block.state.BlockState;
  */
 public class PortalScanner {
 
-    // Maximum portal dimensions to search
     private static final int MAX_PORTAL_WIDTH = 21;
     private static final int MAX_PORTAL_HEIGHT = 21;
     private static final int SEARCH_RADIUS = 3;
@@ -48,7 +47,6 @@ public class PortalScanner {
     public static Set<BlockPos> findFrameBlocks(ServerLevel world, BlockPos portalPos) {
         Set<BlockPos> frameBlocks = new HashSet<>();
 
-        // Try both portal orientations (X and Z axis)
         for (Direction.Axis axis : new Direction.Axis[]{Direction.Axis.X, Direction.Axis.Z}) {
             Set<BlockPos> found = findFrameBlocksForAxis(world, portalPos, axis);
             if (!found.isEmpty()) {
@@ -59,28 +57,21 @@ public class PortalScanner {
         return frameBlocks;
     }
 
-    /**
-     * Find frame blocks for a specific portal axis orientation.
-     */
     private static Set<BlockPos> findFrameBlocksForAxis(ServerLevel world, BlockPos startPos, Direction.Axis axis) {
         Set<BlockPos> frameBlocks = new HashSet<>();
 
-        // Determine the horizontal direction based on axis
         Direction widthDir = axis == Direction.Axis.X ? Direction.EAST : Direction.SOUTH;
 
-        // Search for the portal interior by finding adjacent portal blocks
         BlockPos portalInterior = findPortalInterior(world, startPos);
         if (portalInterior == null) {
             return frameBlocks;
         }
 
-        // Find the lower-left corner of the portal interior
         BlockPos lowerCorner = findLowerCorner(world, portalInterior, widthDir);
         if (lowerCorner == null) {
             return frameBlocks;
         }
 
-        // Measure portal dimensions
         int width = measureWidth(world, lowerCorner, widthDir);
         int height = measureHeight(world, lowerCorner);
 
@@ -88,7 +79,6 @@ public class PortalScanner {
             return frameBlocks;
         }
 
-        // Collect frame blocks
         // Bottom frame (below portal)
         for (int i = -1; i <= width; i++) {
             frameBlocks.add(lowerCorner.relative(widthDir, i).below());
@@ -112,16 +102,11 @@ public class PortalScanner {
         return frameBlocks;
     }
 
-    /**
-     * Find a portal block near the start position.
-     */
     private static BlockPos findPortalInterior(ServerLevel world, BlockPos startPos) {
-        // Check if start pos is already a portal block
         if (world.getBlockState(startPos).is(Blocks.NETHER_PORTAL)) {
             return startPos;
         }
 
-        // Search nearby for portal blocks
         for (int dx = -SEARCH_RADIUS; dx <= SEARCH_RADIUS; dx++) {
             for (int dy = -SEARCH_RADIUS; dy <= SEARCH_RADIUS; dy++) {
                 for (int dz = -SEARCH_RADIUS; dz <= SEARCH_RADIUS; dz++) {
@@ -135,18 +120,13 @@ public class PortalScanner {
         return null;
     }
 
-    /**
-     * Find the lower-left corner of the portal interior.
-     */
     private static BlockPos findLowerCorner(ServerLevel world, BlockPos portalPos, Direction widthDir) {
         BlockPos corner = portalPos;
 
-        // Move down to find the bottom
         while (world.getBlockState(corner.below()).is(Blocks.NETHER_PORTAL)) {
             corner = corner.below();
         }
 
-        // Move in negative width direction to find left edge
         Direction negativeDir = widthDir.getOpposite();
         while (world.getBlockState(corner.relative(negativeDir)).is(Blocks.NETHER_PORTAL)) {
             corner = corner.relative(negativeDir);
@@ -155,9 +135,6 @@ public class PortalScanner {
         return corner;
     }
 
-    /**
-     * Measure the width of the portal (number of portal blocks horizontally).
-     */
     private static int measureWidth(ServerLevel world, BlockPos lowerCorner, Direction widthDir) {
         int width = 0;
         BlockPos checkPos = lowerCorner;
@@ -170,9 +147,6 @@ public class PortalScanner {
         return width;
     }
 
-    /**
-     * Measure the height of the portal (number of portal blocks vertically).
-     */
     private static int measureHeight(ServerLevel world, BlockPos lowerCorner) {
         int height = 0;
         BlockPos checkPos = lowerCorner;
@@ -195,7 +169,6 @@ public class PortalScanner {
             return portalPos;
         }
 
-        // Measure both axes, pick the wider one
         BlockPos eastCorner = findLowerCorner(world, interior, Direction.EAST);
         int eastWidth = eastCorner != null ? measureWidth(world, eastCorner, Direction.EAST) : 0;
 
@@ -222,7 +195,6 @@ public class PortalScanner {
 
         int height = measureHeight(world, lowerCorner);
 
-        // Apply width offset along the correct axis
         if (widthDir == Direction.SOUTH) {
             return lowerCorner.offset(0, height / 2, width / 2);
         }
