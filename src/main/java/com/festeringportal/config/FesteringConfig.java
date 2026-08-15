@@ -13,7 +13,7 @@ public class FesteringConfig {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static final Path CONFIG_PATH = Path.of("config", "festeringportal.json");
 
-    public static int SPREAD_INTERVAL_TICKS = 20;
+    public static int SPREAD_INTERVAL_TICKS = 60;
     public static int RADIUS_PER_CRYING_OBSIDIAN = 64;
     public static int MAX_DEPTH_BELOW_SURFACE = 4;
     public static boolean CORRUPT_MOBS = true;
