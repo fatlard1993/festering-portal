@@ -24,11 +24,7 @@ A Fabric mod that makes nether portals built with **Crying Obsidian** spread net
 
 ## Installation
 
-Install alongside its declared dependencies (see `fabric.mod.json`), then place the mod jar in your `mods` folder.
-
-## Requirements
-
-Targets the Minecraft, Fabric Loader, and Java versions declared in this mod's `gradle.properties`; check there for the exact currently-supported version.
+Install server-side alongside its declared dependencies (see `fabric.mod.json`). Vanilla clients need nothing. Version targets live in `gradle.properties` (Minecraft, loader, Fabric API) and `fabric.mod.json` (Java).
 
 ## Usage
 
@@ -49,4 +45,4 @@ Configuration options can be found in the config file (generated on first run):
 
 ## License
 
-MIT License - see [LICENSE](LICENSE) for details.
+MIT, see [LICENSE](LICENSE).
