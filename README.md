@@ -41,23 +41,11 @@ Targets the Minecraft, Fabric Loader, and Java versions declared in this mod's `
 
 Configuration options can be found in the config file (generated on first run):
 
-- `spreadIntervalTicks`: How often corruption spreads (default: 20 ticks = 1 second)
+- `spreadIntervalTicks`: How often corruption spreads (default: 60 ticks = 3 seconds; 20 was the original default and proved far too fast in play)
 - `radiusPerCryingObsidian`: Blocks of radius per crying obsidian (default: 64)
 - `maxDepthBelowSurface`: How deep below surface corruption can spread (default: 4)
 - `corruptMobs`: Enable/disable mob corruption (default: true)
 - `mobCorruptionChance`: Chance per tick for mob corruption (default: 0.05)
-
-## Screenshots
-
-*Screenshots coming soon*
-
-## Building from Source
-
-```bash
-./gradlew build
-```
-
-The built jar will be in `build/libs/`.
 
 ## License
 
