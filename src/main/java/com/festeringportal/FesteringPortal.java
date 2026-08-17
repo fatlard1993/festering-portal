@@ -22,6 +22,21 @@ public class FesteringPortal implements ModInitializer {
 
     @Override
     public void onInitialize() {
+        // Guarded class load: PortalQuestRegistration names village-quests types.
+        if (net.fabricmc.loader.api.FabricLoader.getInstance().isModLoaded("village-quests-justfatlard")) {
+            com.festeringportal.integration.PortalQuestRegistration.register();
+
+            // Half-built frames wait here for their chunk. Never during chunk
+            // loading: placing blocks in a chunk that is still arriving waits on
+            // the thread doing the arriving.
+            net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents.END_SERVER_TICK.register(server -> {
+                if (server.getTickCount() % 40 != 0) return;
+                for (net.minecraft.server.level.ServerLevel level : server.getAllLevels()) {
+                    com.festeringportal.quest.PortalSites.tick(level);
+                }
+            });
+        }
+
         FesteringConfig.load();
 
         ServerLifecycleEvents.SERVER_STARTED.register(server -> {
