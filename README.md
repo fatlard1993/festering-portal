@@ -26,7 +26,7 @@ A Fabric mod that makes nether portals built with **Crying Obsidian** spread net
 
 Crying obsidian in a lit frame corrupts sixty-four blocks of overworld per stone. Nobody finds that out by accident, and nobody should find it out beside their own house.
 
-With [village-quests](https://github.com/justfatlard/village-quests) installed, a cleric who trusts you a great deal admits they built a frame a long way out of town, stopped halfway, and have not been back. They hand you three obsidian, one crying stone and a flint and steel, tell you roughly which direction, and ask you to finish it and come back and describe what you saw.
+With [village-quests](https://github.com/fatlard1993/village-quests) installed, a cleric who trusts you a great deal admits they built a frame a long way out of town, stopped halfway, and have not been back. They hand you three obsidian, one crying stone and a flint and steel, tell you roughly which direction, and ask you to finish it and come back and describe what you saw.
 
 They are not being generous with the materials. Four stones and exactly one of them crying is the smallest festering portal there is, and they are still not going themselves.
 
