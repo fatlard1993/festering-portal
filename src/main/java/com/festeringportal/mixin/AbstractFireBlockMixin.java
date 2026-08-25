@@ -11,6 +11,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import java.util.Optional;
+import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
@@ -29,18 +30,23 @@ import net.minecraft.world.level.portal.PortalShape;
 public class AbstractFireBlockMixin {
 
     /**
-     * Wrap the obsidian check in shouldLightPortalAt to also accept crying obsidian.
+     * Wrap the frame check in isPortal to also accept crying obsidian.
+     *
+     * <p>26.3-snapshot-10 replaced an inline {@code state.is(Blocks.OBSIDIAN)} here with a shared
+     * {@link net.minecraft.world.level.portal.PortalShape#FRAME} predicate. The target is a string,
+     * so the build stays green and the mixin simply stops applying: this only surfaces on a launch.
      */
     @WrapOperation(
         method = "isPortal",
         at = @At(
             value = "INVOKE",
-            target = "Lnet/minecraft/world/level/block/state/BlockState;is(Ljava/lang/Object;)Z",
+            target = "Ljava/util/function/Predicate;test(Ljava/lang/Object;)Z",
             ordinal = 0
         )
     )
-    private static boolean wrapShouldLightObsidianCheck(BlockState state, Object block, Operation<Boolean> original) {
-        return original.call(state, block) || state.is(Blocks.CRYING_OBSIDIAN);
+    private static boolean wrapShouldLightObsidianCheck(Predicate<BlockState> frame, Object state,
+            Operation<Boolean> original) {
+        return original.call(frame, state) || ((BlockState) state).is(Blocks.CRYING_OBSIDIAN);
     }
 
     /**
