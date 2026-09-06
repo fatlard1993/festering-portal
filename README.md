@@ -32,10 +32,6 @@ They are not being generous with the materials. Four stones and exactly one of t
 
 Optional and guarded: without village-quests the mod behaves exactly as before.
 
-## Installation
-
-Install server-side alongside its declared dependencies (see `fabric.mod.json`). Vanilla clients need nothing. Version targets live in `gradle.properties` (Minecraft, loader, Fabric API) and `fabric.mod.json` (Java).
-
 ## Usage
 
 1. Build a nether portal frame using **Crying Obsidian** (regular obsidian corners are fine)
@@ -52,6 +48,10 @@ Configuration options can be found in the config file (generated on first run):
 - `maxDepthBelowSurface`: How deep below surface corruption can spread (default: 4)
 - `corruptMobs`: Enable/disable mob corruption (default: true)
 - `mobCorruptionChance`: Chance per tick for mob corruption (default: 0.05)
+
+## Development
+
+Installing is in [DEVELOPMENT.md](DEVELOPMENT.md).
 
 ## License
 
