@@ -830,7 +830,7 @@ public class BlockTransformations {
                 outputBlock = getRandomAlternative(outputBlock, random);
             }
 
-            return outputBlock.defaultBlockState();
+            return keepingProperties(input, outputBlock.defaultBlockState());
         }
 
         // No transformation available
@@ -890,6 +890,29 @@ public class BlockTransformations {
     /**
      * Check if a block can be transformed.
      */
+    /**
+     * The swapped block, standing the way the old one stood.
+     *
+     * <p>A swap used to hand back the new block's default state, which is a palette change only
+     * for a plain cube. Anything with a facing, a half, a lit flame or a set of connections came
+     * out turned to north and reset: a wall torch fell off its wall, a campfire faced the wrong
+     * way, a pane became a bar with no neighbours. Every property the two blocks share is
+     * carried across, so a swap is a swap and never a rebuild.
+     */
+    public static BlockState keepingProperties(BlockState from, BlockState to) {
+        BlockState out = to;
+        for (net.minecraft.world.level.block.state.properties.Property<?> property : from.getProperties()) {
+            out = carry(from, out, property);
+        }
+        return out;
+    }
+
+    private static <T extends Comparable<T>> BlockState carry(BlockState from, BlockState to,
+            net.minecraft.world.level.block.state.properties.Property<T> property) {
+        if (!to.hasProperty(property)) return to;
+        return to.setValue(property, from.getValue(property));
+    }
+
     public static boolean canTransform(BlockState state) {
         Block block = state.getBlock();
         return SIMPLE_TRANSFORMATIONS.containsKey(block) || STATE_TRANSFORMATIONS.containsKey(block);

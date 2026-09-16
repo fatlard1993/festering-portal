@@ -6,11 +6,11 @@ A Fabric mod that makes nether portals built with **Crying Obsidian** spread net
 
 - **Crying Obsidian Portals**: Build nether portal frames using Crying Obsidian instead of (or mixed with) regular Obsidian
 - **Organic Corruption Spread**: Corruption spreads slowly and organically, one block at a time, like grass spreading
-- **Scalable Radius**: Each Crying Obsidian block in the frame adds 64 blocks to the maximum corruption radius (1-14 blocks = 64-896 block radius)
+- **Scalable Radius**: Each Crying Obsidian block in the frame, corners included, adds 64 blocks to the maximum corruption radius (a minimum-size frame holds up to 14, for a 64-896 block radius; larger frames hold more)
 - **Block Transformations**: Over 200 block types transform into nether equivalents:
   - Grass/Dirt → Netherrack/Soul Soil
   - Stone → Basalt/Blackstone
-  - Water → Lava (with containment walls)
+  - Surface water → Lava (with containment walls), except within 3 blocks of anything lava could set alight, which stays water
   - Trees → Crimson/Warped stems
   - And many more...
 - **Mob Corruption**: Mobs standing on corrupted ground may transform:
@@ -18,9 +18,11 @@ A Fabric mod that makes nether portals built with **Crying Obsidian** spread net
   - Villager → Zombie Villager
   - Slime → Magma Cube
   - Horse → Skeleton Horse
+- **State-Preserving Swaps**: Every swap keeps the properties the old and new block share (facing, half, axis, lit, connections), so stairs, doors, torches and panes stay put
 - **Maturation System**: Nether blocks evolve over time - netherrack becomes nylium, magma blocks melt into lava
 - **Depth Limit**: Corruption only spreads near the surface (configurable depth)
-- **Entity Trigger**: Entities exiting the portal trigger corruption bursts
+- **Entity Trigger**: Entities arriving through a portal within 10 blocks of a festering portal trigger a corruption burst (at most once every 5 seconds)
+- **Overworld Only**: Only portals lit in the overworld fester
 
 ## Learning It
 
@@ -41,13 +43,15 @@ Optional and guarded: without village-quests the mod behaves exactly as before.
 
 ## Configuration
 
-Configuration options can be found in the config file (generated on first run):
+Configuration options can be found in `config/festeringportal.json` (generated on first run):
 
 - `spreadIntervalTicks`: How often corruption spreads (default: 60 ticks = 3 seconds; 20 was the original default and proved far too fast in play)
 - `radiusPerCryingObsidian`: Blocks of radius per crying obsidian (default: 64)
 - `maxDepthBelowSurface`: How deep below surface corruption can spread (default: 4)
 - `corruptMobs`: Enable/disable mob corruption (default: true)
-- `mobCorruptionChance`: Chance per tick for mob corruption (default: 0.05)
+- `mobCorruptionChance`: Chance per spread cycle that mobs within 20 blocks of the portal are corrupted (default: 0.05)
+- `transformWaterToLava`: Enable/disable turning water into contained lava (default: true)
+- `maxPortalsPerTick`: How many festering portals spread per cycle; the rest take turns (default: 10)
 
 ## Development
 

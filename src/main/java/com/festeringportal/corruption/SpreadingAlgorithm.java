@@ -413,6 +413,13 @@ public class SpreadingAlgorithm {
             return false;
         }
 
+        // Not beside anything that burns. The corruption is a change of palette, and lava beside
+        // a wooden wall is a fire: a pond by a house took the house, doors, chests and beds with
+        // it, down to the fences. Water near anything lava could light stays water.
+        if (wouldLightSomething(world, waterPos)) {
+            return false;
+        }
+
         BlockPos floorPos = waterPos.below();
         BlockState floorState = world.getBlockState(floorPos);
         if (floorState.is(Blocks.WATER) || !floorState.isRedstoneConductor(world, floorPos)) {
@@ -443,6 +450,21 @@ public class SpreadingAlgorithm {
     /**
      * Get a random wall block for lava pool containment.
      */
+    /** How far lava reaches to light a block: its own random-tick spread, with a block to spare. */
+    private static final int LAVA_REACH = 3;
+
+    /** Whether lava here could set fire to anything a player would miss. */
+    private static boolean wouldLightSomething(ServerLevel world, BlockPos lavaPos) {
+        for (BlockPos pos : BlockPos.betweenClosed(lavaPos.offset(-LAVA_REACH, -LAVA_REACH, -LAVA_REACH),
+                lavaPos.offset(LAVA_REACH, LAVA_REACH, LAVA_REACH))) {
+            BlockState state = world.getBlockState(pos);
+            if (state.isAir() || state.is(Blocks.WATER)) continue;
+            // The game's own flag for what lava sets alight: planks, logs, wool, fences and the rest.
+            if (state.ignitedByLava()) return true;
+        }
+        return false;
+    }
+
     private static Block getRandomWallBlock(RandomSource random) {
         float roll = random.nextFloat();
         if (roll < 0.4f) {

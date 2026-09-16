@@ -48,7 +48,7 @@ public class FesteringConfig {
     }
 
     private static class ConfigData {
-        int spreadIntervalTicks = 20;
+        int spreadIntervalTicks = 60;
         int radiusPerCryingObsidian = 64;
         int maxDepthBelowSurface = 4;
         boolean corruptMobs = true;
