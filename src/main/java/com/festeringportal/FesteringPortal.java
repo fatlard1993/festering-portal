@@ -73,6 +73,7 @@ public class FesteringPortal implements ModInitializer {
         }
         LOGGER.info("Festering portal activated at {}! Max radius: {} blocks",
             center, cryingObsidianCount * FesteringConfig.RADIUS_PER_CRYING_OBSIDIAN);
+        Awards.portalLit(world, center);
     }
 
     /**
