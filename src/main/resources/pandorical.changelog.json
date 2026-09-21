@@ -1,0 +1,22 @@
+{
+	"overview": [
+		"Build a nether portal with crying obsidian and the overworld around it starts to rot: grass to netherrack, water to lava, trees to crimson stems, and mobs into their nether counterparts.",
+		"Each crying obsidian block in the frame buys another 64 blocks of radius, so how far it goes is up to you."
+	],
+	"versions": {
+		"1.2.2": [
+			"A corrupted block keeps every property it shares with what it becomes, so torches stay on walls and panes keep hold of their neighbours.",
+			"Water within three blocks of anything lava could set alight is left as water: a pond by a house used to take the house with it. Lighting a frame with crying obsidian in it finally earns an advancement, since that is the whole mod in one act."
+		],
+		"1.2.1": [
+			"Crying obsidian frames light again after the game changed the way it checks a portal's shape."
+		],
+		"1.2.0": [
+			"With village-quests installed, a cleric hands you four stones with exactly one crying among them and points you at a half-built doorway a hundred and fifty blocks out. Far enough that what happens next never reaches the houses, which is the point: they are not being generous, they are being careful."
+		],
+		"1.0.0": [
+			"Crying obsidian portal frames spread corruption outward one block at a time, the way grass spreads, across more than two hundred block types.",
+			"Mobs standing on corrupted ground may turn: pig to zombified piglin, villager to zombie villager, slime to magma cube, horse to skeleton horse."
+		]
+	}
+}

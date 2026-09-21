@@ -1,0 +1,18 @@
+{
+	"schemaVersion": 1,
+	"id": "festering-portal-gametest",
+	"version": "1.0.0",
+	"name": "Festering Portal smoke test",
+	"description": "Loads the mod, joins a world, and fails if anything on the way threw.",
+	"license": "MIT",
+	"environment": "*",
+	"entrypoints": {
+		"fabric-client-gametest": [
+			"com.festeringportal.gametest.SmokeTest"
+		]
+	},
+	"depends": {
+		"festeringportal": "*",
+		"fabric-client-gametest-api-v1": "*"
+	}
+}
