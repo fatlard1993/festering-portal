@@ -5,18 +5,21 @@
 	],
 	"versions": {
 		"1.2.2": [
-			"A corrupted block keeps every property it shares with what it becomes, so torches stay on walls and panes keep hold of their neighbours.",
-			"Water within three blocks of anything lava could set alight is left as water: a pond by a house used to take the house with it. Lighting a frame with crying obsidian in it finally earns an advancement, since that is the whole mod in one act."
+			"A corrupted block keeps the properties it shares with what it becomes.",
+			"Water near anything lava could light is left alone. A pond by a house used to take the house.",
+			"Lighting a frame with crying obsidian in it earns an advancement."
 		],
 		"1.2.1": [
 			"Crying obsidian frames light again after the game changed the way it checks a portal's shape."
 		],
 		"1.2.0": [
-			"With village-quests installed, a cleric hands you four stones with exactly one crying among them and points you at a half-built doorway a hundred and fifty blocks out. Far enough that what happens next never reaches the houses, which is the point: they are not being generous, they are being careful."
+			"With Village Quests installed, a cleric hands you four stones, one of them crying.",
+			"He points you at a half-built doorway a hundred and fifty blocks out.",
+			"Far enough that what happens next never reaches the houses. That is the point."
 		],
 		"1.0.0": [
-			"Crying obsidian portal frames spread corruption outward one block at a time, the way grass spreads, across more than two hundred block types.",
-			"Mobs standing on corrupted ground may turn: pig to zombified piglin, villager to zombie villager, slime to magma cube, horse to skeleton horse."
+			"Crying obsidian frames spread corruption outward a block at a time, across two hundred block types.",
+			"Mobs on corrupted ground may turn: pig to zombified piglin, villager to zombie villager, slime to magma cube."
 		]
 	}
 }
