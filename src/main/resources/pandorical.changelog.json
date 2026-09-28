@@ -4,10 +4,12 @@
 		"Each crying obsidian block in the frame buys another 64 blocks of radius, so how far it goes is up to you."
 	],
 	"versions": {
+		"1.2.3": [
+			"Lighting a frame with crying obsidian in it earns an advancement."
+		],
 		"1.2.2": [
 			"A corrupted block keeps the properties it shares with what it becomes.",
-			"Water near anything lava could light is left alone. A pond by a house used to take the house.",
-			"Lighting a frame with crying obsidian in it earns an advancement."
+			"Water near anything lava could light is left alone. A pond by a house used to take the house."
 		],
 		"1.2.1": [
 			"Crying obsidian frames light again after the game changed the way it checks a portal's shape."
