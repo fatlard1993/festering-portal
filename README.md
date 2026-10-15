@@ -32,8 +32,6 @@ With [village-quests](https://github.com/fatlard1993/village-quests) installed, 
 
 They are not being generous with the materials. Four stones and exactly one of them crying is the smallest festering portal there is, and they are still not going themselves.
 
-Optional and guarded: without village-quests the mod behaves exactly as before.
-
 ## Usage
 
 1. Build a nether portal frame using **Crying Obsidian** (regular obsidian corners are fine)
@@ -52,6 +50,10 @@ Configuration options can be found in `config/festeringportal.json` (generated o
 - `mobCorruptionChance`: Chance per spread cycle that mobs within 20 blocks of the portal are corrupted (default: 0.05)
 - `transformWaterToLava`: Enable/disable turning water into contained lava (default: true)
 - `maxPortalsPerTick`: How many festering portals spread per cycle; the rest take turns (default: 10)
+
+## Installing
+
+Server-side only, and Pandorical is not needed: players connect with an unmodified client. Singleplayer works too.
 
 ## Development
 
