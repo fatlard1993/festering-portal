@@ -4,6 +4,9 @@
 		"Each crying obsidian block in the frame buys another 64 blocks of radius, so how far it goes is up to you."
 	],
 	"versions": {
+		"1.2.5": [
+			"Drop changelog notes for changes nothing in the game shows."
+		],
 		"1.2.3": [
 			"Lighting a frame with crying obsidian in it earns an advancement."
 		],
