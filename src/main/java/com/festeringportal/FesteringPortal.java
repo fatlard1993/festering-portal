@@ -35,6 +35,7 @@ public class FesteringPortal implements ModInitializer {
                     com.festeringportal.quest.PortalSites.tick(level);
                 }
             });
+            ServerLifecycleEvents.SERVER_STOPPED.register(server -> com.festeringportal.quest.PortalSites.clear());
         }
 
         FesteringConfig.load();

@@ -74,7 +74,7 @@ public class FinishTheFrameQuest extends VillagerQuest {
 		this.heading = names[octant];
 		this.sited = true;
 
-		PortalSites.expect(this.siteX, this.siteZ);
+		PortalSites.expect(player.level().dimension(), this.siteX, this.siteZ);
 
 		// Exactly enough, and exactly one crying stone. The smallest version of
 		// the thing they are afraid of.

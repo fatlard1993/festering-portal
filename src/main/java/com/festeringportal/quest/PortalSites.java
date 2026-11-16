@@ -3,7 +3,9 @@ package com.festeringportal.quest;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.Heightmap;
 
@@ -22,7 +24,7 @@ import net.minecraft.world.level.levelgen.Heightmap;
 public final class PortalSites {
 	private PortalSites() {}
 
-	private record Pending(int x, int z, BlockPos[] built) {}
+	private record Pending(ResourceKey<Level> dimension, int x, int z) {}
 
 	private static final List<Pending> PENDING = new ArrayList<>();
 
@@ -37,8 +39,13 @@ public final class PortalSites {
 	/** The half the cleric managed: one upright, the sill, and a start on the lintel. */
 	private static final int PLACED_BY_CLERIC = 6;
 
-	public static synchronized void expect(int x, int z) {
-		PENDING.add(new Pending(x, z, null));
+	public static synchronized void expect(ResourceKey<Level> dimension, int x, int z) {
+		PENDING.add(new Pending(dimension, x, z));
+	}
+
+	/** The list belongs to one running world; a singleplayer world opened next must not inherit it. */
+	public static synchronized void clear() {
+		PENDING.clear();
 	}
 
 	/** Called from the mod's own tick. Builds any site whose chunk has turned up. */
@@ -46,6 +53,7 @@ public final class PortalSites {
 		if (PENDING.isEmpty()) return;
 
 		PENDING.removeIf(site -> {
+			if (site.dimension() != world.dimension()) return false;
 			BlockPos probe = new BlockPos(site.x(), world.getSeaLevel(), site.z());
 			if (!world.isLoaded(probe)) return false;
 
