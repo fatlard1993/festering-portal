@@ -35,6 +35,9 @@ public class SpreadingAlgorithm {
 
     private static final int SPREADS_PER_TICK = 3;
 
+    /** A fully spread portal searches for new ground at most every 2^this spread intervals. */
+    private static final int MAX_RESCAN_BACKOFF_SHIFT = 4;
+
     /**
      * Attempt to spread corruption from one portal.
      * Tries multiple spread attempts per call for faster corruption.
@@ -54,6 +57,9 @@ public class SpreadingAlgorithm {
         Set<BlockPos> frontier = portal.corruptionFrontier;
 
         if (frontier.isEmpty()) {
+            if (currentTick < portal.nextRescanTick) {
+                return false;
+            }
             Set<BlockPos> newFrontier = initializeFrontier(world, portal.center, portal.maxRadius);
             frontier.addAll(newFrontier);
         }
@@ -61,8 +67,14 @@ public class SpreadingAlgorithm {
         cleanupFrontier(world, portal, frontier);
 
         if (frontier.isEmpty()) {
+            // Nothing left to turn. Looking again finds anything built at the edge since, but the
+            // search walks the whole corrupted area, so a finished portal looks less and less often.
+            portal.fruitlessRescans = Math.min(portal.fruitlessRescans + 1, MAX_RESCAN_BACKOFF_SHIFT);
+            portal.nextRescanTick = currentTick
+                    + ((long) FesteringConfig.SPREAD_INTERVAL_TICKS << portal.fruitlessRescans);
             return false;
         }
+        portal.fruitlessRescans = 0;
 
         boolean anySpread = false;
         RandomSource random = world.getRandom();
@@ -508,7 +520,7 @@ public class SpreadingAlgorithm {
     public static Set<BlockPos> initializeFrontier(ServerLevel world, BlockPos portalCenter, int maxRadius) {
         Set<BlockPos> frontier = new HashSet<>();
         Set<BlockPos> visited = new HashSet<>();
-        Queue<BlockPos> toExplore = new LinkedList<>();
+        ArrayDeque<BlockPos> toExplore = new ArrayDeque<>();
 
         toExplore.add(portalCenter);
         visited.add(portalCenter);

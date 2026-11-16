@@ -43,6 +43,9 @@ public class FesteringPortalState extends SavedData {
         public Set<BlockPos> corruptionFrontier;
         public long lastSpreadTick;
         public long lastBurstTick;
+        /** Not saved: after a restart a finished portal simply looks once more. */
+        public long nextRescanTick;
+        public int fruitlessRescans;
 
         public static final Codec<FesteringPortalData> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
