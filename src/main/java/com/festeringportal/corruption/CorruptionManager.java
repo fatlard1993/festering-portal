@@ -55,14 +55,13 @@ public class CorruptionManager {
             int idx = (portalRotationIndex + i) % portals.size();
             FesteringPortalState.FesteringPortalData portal = portals.get(idx);
 
-            // Check if portal is still valid
-            if (!isPortalStillValid(world, portal.center)) {
-                portalsToRemove.add(portal.center);
-                FesteringPortal.LOGGER.debug("Portal at {} no longer valid", portal.center);
+            if (!world.hasChunkAt(portal.center)) {
                 continue;
             }
 
-            if (!world.hasChunkAt(portal.center)) {
+            if (!isPortalStillValid(world, portal.center)) {
+                portalsToRemove.add(portal.center);
+                FesteringPortal.LOGGER.debug("Portal at {} no longer valid", portal.center);
                 continue;
             }
 
@@ -80,19 +79,25 @@ public class CorruptionManager {
     }
 
     /**
-     * Check if a portal is still valid (has portal blocks).
+     * Check if a portal is still valid (has portal blocks). Part of the box in an unloaded
+     * chunk could still hold the portal, so it only counts as gone when every block was seen.
      */
     private static boolean isPortalStillValid(ServerLevel world, BlockPos center) {
+        boolean unseen = false;
         for (int dx = -2; dx <= 2; dx++) {
             for (int dy = -2; dy <= 2; dy++) {
                 for (int dz = -2; dz <= 2; dz++) {
                     BlockPos checkPos = center.offset(dx, dy, dz);
+                    if (!world.hasChunkAt(checkPos)) {
+                        unseen = true;
+                        continue;
+                    }
                     if (world.getBlockState(checkPos).is(Blocks.NETHER_PORTAL)) {
                         return true;
                     }
                 }
             }
         }
-        return false;
+        return unseen;
     }
 }
