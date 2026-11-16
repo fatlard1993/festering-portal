@@ -4,6 +4,11 @@
 		"Each crying obsidian block in the frame buys another 64 blocks of radius, so how far it goes is up to you."
 	],
 	"versions": {
+		"1.2.6": [
+			"A festering portal in an unloaded chunk stays unloaded, instead of being dragged in every three seconds to check it still stands.",
+			"A portal that has corrupted everything in reach searches for new ground less and less often, not every three seconds forever.",
+			"The cleric's half-built frame goes up in the world it was promised in, and never in the next world opened."
+		],
 		"1.2.5": [
 			"Drop changelog notes for changes nothing in the game shows."
 		],
