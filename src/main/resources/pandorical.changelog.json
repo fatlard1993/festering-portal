@@ -4,6 +4,9 @@
 		"Each crying obsidian block in the frame buys another 64 blocks of radius, so how far it goes is up to you."
 	],
 	"versions": {
+		"1.2.7": [
+			"Describes itself in one short line of what it adds."
+		],
 		"1.2.6": [
 			"A festering portal in an unloaded chunk stays unloaded, instead of being dragged in every three seconds to check it still stands.",
 			"A portal that has corrupted everything in reach searches for new ground less and less often, not every three seconds forever.",
